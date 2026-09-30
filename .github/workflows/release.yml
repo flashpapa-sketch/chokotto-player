@@ -1,0 +1,27 @@
+name: publish-release
+on:
+  push:
+    branches: [dist-v1.1.1]
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Join files and check SHA-256
+        run: |
+          mkdir out
+          cat parts/setup.part* > out/chokotto-player-1.1.1-setup.exe
+          cat parts/portable.part* > out/chokotto-player-1.1.1-portable.zip
+          cd out
+          echo "b8bb601c77e5f61c3b9181b44a938ce8a874721aa33381bd94aeef89b95a0e22  chokotto-player-1.1.1-setup.exe" > SHA256SUMS.txt
+          echo "9038725fe9f7e7e11fa66fcc152b2a1668eaddd17797f21812ba48fea96b1359  chokotto-player-1.1.1-portable.zip" >> SHA256SUMS.txt
+          sha256sum -c SHA256SUMS.txt
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create v1.1.1 out/chokotto-player-1.1.1-setup.exe out/chokotto-player-1.1.1-portable.zip out/SHA256SUMS.txt \
+            --repo "$GITHUB_REPOSITORY" --target main \
+            --title "ちょこっとplayer 1.1.1" --notes-file release-notes.md
