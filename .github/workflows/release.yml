@@ -15,8 +15,8 @@ jobs:
           cat parts/setup.part* > out/chokotto-player-1.1.1-setup.exe
           cat parts/portable.part* > out/chokotto-player-1.1.1-portable.zip
           cd out
-          echo "ad4d2d96aed5d9ef2e7d329d93f444ef59b6545da2c1fef332131307331f9cff  chokotto-player-1.1.1-setup.exe" > SHA256SUMS.txt
-          echo "f0afabbf37a9e09e1eb8c2db40ee30458d1351c552928f998cae9b5bcd2d2ec4  chokotto-player-1.1.1-portable.zip" >> SHA256SUMS.txt
+          echo "d33dbabb481b85e0bfa389ec0aeb0426c9cd530635a48b51ad5a990c43a6f9d3  chokotto-player-1.1.1-setup.exe" > SHA256SUMS.txt
+          echo "3fc008ffe648888bf00fcf48962cc2d8c1fc092ffad630d738d1c74ebb98ded6  chokotto-player-1.1.1-portable.zip" >> SHA256SUMS.txt
           sha256sum -c SHA256SUMS.txt
       - name: Create or update release
         env:

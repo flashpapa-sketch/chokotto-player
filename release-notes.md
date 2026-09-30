@@ -9,7 +9,7 @@
 ### 主な内容
 - ALAC（Apple Lossless）の再生に対応
 - ハイレゾ形式の表示と「ハイレゾ優先」出力
-- 見た目 17 種類＋自作スキンの追加に対応
+- 見た目 20 種類（標準はシグナル・オレンジ）＋自作スキンの追加に対応
 - 本体の大きさと配置を 275×116 に統一、`.wsz` スキン読込
 - 書体を同梱（どの PC でも同じ見た目）
 - シャッフル・リピートのボタンを追加
@@ -19,6 +19,6 @@
 
 ### SHA-256
 ```
-ad4d2d96aed5d9ef2e7d329d93f444ef59b6545da2c1fef332131307331f9cff  chokotto-player-1.1.1-setup.exe
-f0afabbf37a9e09e1eb8c2db40ee30458d1351c552928f998cae9b5bcd2d2ec4  chokotto-player-1.1.1-portable.zip
+d33dbabb481b85e0bfa389ec0aeb0426c9cd530635a48b51ad5a990c43a6f9d3  chokotto-player-1.1.1-setup.exe
+3fc008ffe648888bf00fcf48962cc2d8c1fc092ffad630d738d1c74ebb98ded6  chokotto-player-1.1.1-portable.zip
 ```
