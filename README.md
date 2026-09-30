@@ -17,13 +17,13 @@
 
 - FLAC / ALAC / WAV / MP3 / AAC / OGG / OPUS などを再生。ALAC（Apple Lossless）にも対応
 - ハイレゾ（24bit/96kHz など）の形式を表示。「ハイレゾ優先」で加工せずに出力
-- 見た目は 17 種類。スキンのフォルダに CSS を置けば自作スキンも追加可能
+- 見た目は 20 種類（標準はシグナル・オレンジ）。スキンのフォルダに CSS を置けば自作スキンも追加可能
 - 懐かしの `.wsz` クラシックスキンの読み込みに対応。本体の大きさも 275×116
 - 10 バンドのイコライザ、プレイリスト
 - タグから「アーティスト - 曲名」を表示。足りない曲名だけネットで補う機能つき（既定はオフ）
 - 勝手に通信しない。履歴を残さない
 
-![17種類の見た目](docs/skins.png)
+![20種類の見た目](docs/skins.png)
 
 ## 初めて起動するとき
 
@@ -33,8 +33,8 @@
 ## ファイルの確認（SHA-256）
 
 ```
-ad4d2d96aed5d9ef2e7d329d93f444ef59b6545da2c1fef332131307331f9cff  chokotto-player-1.1.1-setup.exe
-f0afabbf37a9e09e1eb8c2db40ee30458d1351c552928f998cae9b5bcd2d2ec4  chokotto-player-1.1.1-portable.zip
+d33dbabb481b85e0bfa389ec0aeb0426c9cd530635a48b51ad5a990c43a6f9d3  chokotto-player-1.1.1-setup.exe
+3fc008ffe648888bf00fcf48962cc2d8c1fc092ffad630d738d1c74ebb98ded6  chokotto-player-1.1.1-portable.zip
 ```
 
 PowerShell で `Get-FileHash .\ファイル名` と打つと確かめられます。
