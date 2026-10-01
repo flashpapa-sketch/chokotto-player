@@ -3,6 +3,7 @@
 ハイレゾ対応の小さな音楽・動画プレイヤー（Windows 10 / 11、64bit）。
 
 ### ダウンロード
+- 細部のデザインを調整（余白の格子、スペクトラム表示、ボタンの手ざわり、イコライザとオプションの配置）
 - 文字とボタンを約1.5倍に（窓の大きさはそのまま）
 - **chokotto-player-1.1.1-setup.exe** … インストーラー版（おすすめ）
 - **chokotto-player-1.1.1-portable.zip** … インストール不要版（展開して「ちょこっとplayer.exe」を起動）
@@ -22,6 +23,6 @@
 
 ### SHA-256
 ```
-3305ba079233834d13492b56d60de6c92de8fd8b7ceba10ce53afba13a7b36cb  chokotto-player-1.1.1-setup.exe
-65a464e1d44c02ec768ce74956efd43e92d4c6584d00f503c31fa66334e785e1  chokotto-player-1.1.1-portable.zip
+71db00bade7c8fb9356de50acddb318f76d417faffa14afed76c8a6924f4186f  chokotto-player-1.1.1-setup.exe
+64b6ae6c73b0ce6cf2669eb60a532e9d4ee6cd74087e492490d1b5c5ca514939  chokotto-player-1.1.1-portable.zip
 ```
