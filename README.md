@@ -33,8 +33,8 @@
 ## ファイルの確認（SHA-256）
 
 ```
-71db00bade7c8fb9356de50acddb318f76d417faffa14afed76c8a6924f4186f  chokotto-player-1.1.1-setup.exe
-64b6ae6c73b0ce6cf2669eb60a532e9d4ee6cd74087e492490d1b5c5ca514939  chokotto-player-1.1.1-portable.zip
+569481e4fdc37f46b16eeed95a130d41bb9ff07ec100adfbbfae9e855aaeb013  chokotto-player-1.1.1-setup.exe
+23eefec3ef90c8a51b596273398e0aae6c46546fd0d8c1d3db4ee6d0304eeae0  chokotto-player-1.1.1-portable.zip
 ```
 
 PowerShell で `Get-FileHash .\ファイル名` と打つと確かめられます。
