@@ -46,6 +46,15 @@ jobs:
           sleep 2
           tail -20 run.log || true
           ls ~/Library/Application\ Support/chokotto-player || true
+      - name: Save screenshot for checking
+        if: always()
+        working-directory: mac
+        run: |
+          mkdir -p /tmp/chk && cp shot.png run.log /tmp/chk/ 2>/dev/null || true
+          cd /tmp/chk && git init -q && git checkout -q -b mac-check
+          git config user.name "Claude" && git config user.email "noreply@anthropic.com"
+          git add -A && git commit -q -m "Mac 起動確認の画面" || true
+          git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" mac-check
       - uses: actions/upload-artifact@v4
         if: always()
         with:
