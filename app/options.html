@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<script src="web-api.js"></script>
+<title>オプション</title>
+<link rel="stylesheet" href="fonts.css">
+<style>
+  /* 本体の内蔵スキンと同じ配色（glass / retro） */
+  :root, body[data-theme="glass"] {
+    --txt: #e8eef7; --sub: #7b8ba1; --line: rgba(255,255,255,.10);
+    --accent: #3ee7f2; --accent-glow: rgba(62,231,242,.5);
+    --radius: 14px; --r-sm: 8px;
+    --win-bg: radial-gradient(120% 60% at 50% -10%, #1b2a3d 0%, transparent 60%), linear-gradient(180deg, #0e141d 0%, #0a0e14 100%);
+    --win-border: rgba(120,200,255,.16);
+    --card-bg: rgba(255,255,255,.04);
+    --field-bg: rgba(255,255,255,.06);
+    --btn-bg: rgba(255,255,255,.06); --btn-bg-hover: rgba(62,231,242,.16);
+    --track-bg: rgba(255,255,255,.10);
+    --font: "Zen Kaku Gothic New", "Yu Gothic UI", "Segoe UI", "Meiryo UI", "Meiryo", system-ui, sans-serif;
+  }
+  body[data-theme="retro"] {
+    --txt: #c8f0f0; --sub: #4f8585; --line: rgba(0,255,200,.28);
+    --accent: #00ffc8; --accent-glow: rgba(0,255,200,.5);
+    --radius: 4px; --r-sm: 0px;
+    --win-bg: linear-gradient(rgba(0,255,200,.07) 1px, transparent 1px) 0 0 / 8px 8px, linear-gradient(90deg, rgba(0,255,200,.07) 1px, transparent 1px) 0 0 / 8px 8px, #071414;
+    --win-border: #00ffc8;
+    --card-bg: rgba(0,0,0,.55); --field-bg: #000;
+    --btn-bg: transparent; --btn-bg-hover: rgba(0,255,200,.12);
+    --track-bg: #1d3a3a;
+    --font: "DotGothic16", "Zen Kaku Gothic New", monospace;
+  }
+  body[data-theme="white"] {
+    --txt: #16181d; --sub: #8a8f99; --line: rgba(0,0,0,.09);
+    --accent: #0a84ff; --accent-glow: rgba(10,132,255,.25);
+    --radius: 14px; --r-sm: 10px;
+    --win-bg: linear-gradient(180deg, #fbfbfc 0%, #f1f2f5 100%);
+    --win-border: rgba(0,0,0,.12);
+    --card-bg: #ffffff; --field-bg: #f6f7f9;
+    --btn-bg: #ffffff; --btn-bg-hover: #eef0f4;
+    --track-bg: #dfe1e6;
+    --font: "Zen Kaku Gothic New", "Yu Gothic UI", "Segoe UI", "Meiryo UI", "Meiryo", system-ui, sans-serif;
+  }
+  body[data-theme="white"] html, body[data-theme="white"] { background: #f4f5f7; }
+  body[data-theme="white"] legend { color: #16181d; }
+  body[data-theme="white"] select option { background: #fff; color: #16181d; }
+  body[data-theme="white"] .num { color: #16181d; }
+  body[data-theme="white"] .btn:hover { color: #16181d; border-color: #16181d; }
+  body[data-theme="white"] input[type=range]::-webkit-slider-thumb { box-shadow: 0 0 0 1px rgba(0,0,0,.18), 0 1px 3px rgba(0,0,0,.25); }
+  body[data-theme="rock"] {
+    --black: #11100f; --red: #d71920; --yellow: #f5c400; --cream: #f5e7b2; --white: #fff4ce;
+    --txt: #11100f; --sub: #3a332c; --line: #11100f;
+    --accent: #d71920; --accent-glow: rgba(0,0,0,0);
+    --radius: 0; --r-sm: 0;
+    --win-bg: linear-gradient(135deg, rgba(215,25,32,.1), transparent 30%), #f5e7b2;
+    --win-border: #11100f;
+    --card-bg: rgba(255,244,206,.8); --field-bg: #f5c400;
+    --btn-bg: #11100f; --btn-bg-hover: #d71920;
+    --track-bg: #fff4ce;
+    --font: "Zen Kaku Gothic New", "Yu Gothic UI", "Yu Gothic", "Meiryo UI", "Meiryo", sans-serif;
+  }
+  body[data-theme="rock"] .win { border-width: 3px; position: relative; isolation: isolate; }
+  body[data-theme="rock"] .win::before {
+    content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: .22;
+    background-image: radial-gradient(#000 0.55px, transparent 0.65px), radial-gradient(#000 0.4px, transparent 0.55px);
+    background-position: 0 0, 3px 3px; background-size: 5px 5px, 7px 7px;
+  }
+  body[data-theme="rock"] .title-bar {
+    flex: 0 0 32px; background: #11100f; color: #f5c400;
+    border-bottom: 3px solid #11100f;
+    font-family: "Anton", Impact, "Arial Black", sans-serif; font-weight: 400; font-size: 15.5px; letter-spacing: .7px;
+  }
+  body[data-theme="rock"] .tb { border-radius: 0; background: #d71920; color: #fff4ce; border: 1px solid #f5c400; font-size: 18px; }
+  body[data-theme="rock"] .tb:hover { background: #f5c400; color: #11100f; }
+  body[data-theme="rock"] .body { padding-top: 10px; }
+  body[data-theme="rock"] fieldset { border: 0; border-radius: 0; background: none; padding: 0 0 4px; margin-bottom: 12px; }
+  body[data-theme="rock"] legend {
+    display: block; width: max-content;
+    margin: 0 0 6px -3px; padding: 3px 7px;
+    background: #d71920; color: #fff4ce;
+    border: 2px solid #11100f; box-shadow: 2px 2px 0 #11100f;
+    font-family: "Anton", Impact, "Arial Black", sans-serif; font-weight: 400; font-size: 15.5px; letter-spacing: .8px;
+    transform: rotate(-2deg);
+  }
+  body[data-theme="rock"] fieldset:nth-of-type(even) legend { background: #f5c400; color: #11100f; transform: rotate(2deg); }
+  body[data-theme="rock"] .row {
+    margin: 0; min-height: 29px; padding: 4px 7px;
+    background: rgba(255,244,206,.8);
+    border-bottom: 2px solid #11100f;
+  }
+  body[data-theme="rock"] .row label.k, body[data-theme="rock"] .row .v label { color: #11100f; font-weight: 900; }
+  body[data-theme="rock"] select { border: 2px solid #11100f; border-radius: 0; background: #f5c400; color: #11100f; font-weight: 900; }
+  body[data-theme="rock"] select option { background: #fff4ce; color: #11100f; }
+  body[data-theme="rock"] input[type=checkbox] { accent-color: #d71920; }
+  body[data-theme="rock"] input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 0; border: 1px solid #11100f; }
+  body[data-theme="rock"] input[type=range]::-webkit-slider-thumb { width: 10px; height: 14px; margin-top: -5px; border-radius: 0; background: #f5c400; border: 2px solid #11100f; box-shadow: none; }
+  body[data-theme="rock"] .num { color: #d71920; font-weight: 900; }
+  body[data-theme="rock"] .note { color: #3a332c; padding: 4px 2px 0; }
+  body[data-theme="rock"] .path { color: #d71920; }
+  body[data-theme="rock"] .btn {
+    border: 2px solid #11100f; border-radius: 0;
+    background: #11100f; color: #f5c400;
+    box-shadow: 3px 3px 0 #d71920;
+    font-family: "Anton", Impact, "Arial Black", "Yu Gothic UI", sans-serif; letter-spacing: .5px;
+  }
+  body[data-theme="rock"] .btn:hover { background: #d71920; color: #fff4ce; border-color: #11100f; }
+  body[data-theme="rock"] .btn:active { transform: translate(2px, 2px); box-shadow: none; }
+  body[data-theme="rock"] .body::-webkit-scrollbar-thumb { background: #11100f; border-radius: 0; }
+  body[data-theme="vintage"] {
+    --txt: #ddd2bf; --sub: #c9a15a; --line: rgba(244,236,220,.1);
+    --accent: #d81f2a; --accent-glow: rgba(216,31,42,.5);
+    --radius: 0; --r-sm: 0;
+    --win-bg: #0b0a09; --win-border: #d81f2a;
+    --card-bg: transparent; --field-bg: #000;
+    --btn-bg: #000; --btn-bg-hover: #f2c018;
+    --track-bg: #000;
+    --font: "Zen Kaku Gothic New", "Yu Gothic UI", "Yu Gothic", "Meiryo UI", "Meiryo", sans-serif;
+  }
+  .strip { display: none; }
+  body[data-theme="vintage"] .strip { display: block; flex: 0 0 auto; }
+  body[data-theme="vintage"] .strip.leopard {
+    height: 6px; background-color: #d9a441;
+    background-image:
+      radial-gradient(ellipse 2.5px 2px at 9px 3px, #d9a441 90%, transparent 95%),
+      radial-gradient(ellipse 4.2px 3.6px at 9px 3px, #2b1a0e 90%, transparent 95%),
+      radial-gradient(ellipse 2.5px 2px at 27px 5px, #d9a441 90%, transparent 95%),
+      radial-gradient(ellipse 4.2px 3.6px at 27px 5px, #2b1a0e 90%, transparent 95%),
+      radial-gradient(ellipse 2.5px 2px at 45px 2px, #d9a441 90%, transparent 95%),
+      radial-gradient(ellipse 4.2px 3.6px at 45px 2px, #2b1a0e 90%, transparent 95%),
+      radial-gradient(circle 1.4px at 18px 6px, #2b1a0e 90%, transparent 95%),
+      radial-gradient(circle 1.4px at 36px 1px, #2b1a0e 90%, transparent 95%);
+    background-size: 54px 8px;
+  }
+  body[data-theme="vintage"] .strip.checker {
+    height: 5px;
+    background-image: repeating-conic-gradient(#d81f2a 0% 25%, #000 0% 50%);
+    background-size: 8px 8px;
+  }
+  body[data-theme="vintage"] .win { border-width: 2px; }
+  body[data-theme="vintage"] .title-bar {
+    flex: 0 0 26px; padding: 0 4px 0 8px;
+    background: linear-gradient(180deg, #241c17 0%, #0d0b0a 100%);
+    border-bottom: 2px solid #d81f2a;
+    color: #7d7264; font-size: 14px; font-weight: 700; letter-spacing: .06em;
+  }
+  body[data-theme="vintage"] .tb { width: 15px; height: 15px; border-radius: 1px; background: #000; color: #f4ecdc; border: 1px solid rgba(244,236,220,.28); font-size: 15.5px; }
+  body[data-theme="vintage"] .tb:hover { background: #d81f2a; color: #fff; }
+  body[data-theme="vintage"] .body { padding: 10px 9px; }
+  body[data-theme="vintage"] .body::-webkit-scrollbar-track { background: #000; }
+  body[data-theme="vintage"] .body::-webkit-scrollbar-thumb { background: #d81f2a; border: 1px solid #000; border-radius: 0; }
+  body[data-theme="vintage"] fieldset { border: 0; background: none; padding: 0; margin-bottom: 10px; }
+  body[data-theme="vintage"] legend {
+    display: flex; align-items: center; gap: 6px; width: 100%;
+    padding: 0; margin-bottom: 4px;
+  }
+  body[data-theme="vintage"] legend::before { content: none; }
+  body[data-theme="vintage"] legend span.lg {
+    flex: none;
+    font-size: 12.5px; font-weight: 700; letter-spacing: .14em; line-height: 1.3;
+    color: #fff; background: #d81f2a; padding: 2px 7px 1px;
+  }
+  body[data-theme="vintage"] legend::after {
+    content: ""; flex: 1; height: 3px;
+    background-image: repeating-linear-gradient(90deg, #f2c018 0 4px, transparent 4px 8px);
+  }
+  body[data-theme="vintage"] .row {
+    margin: 0; min-height: 26px; padding: 2px 3px;
+    border-bottom: 1px dashed rgba(244,236,220,.12);
+    color: #ddd2bf;
+  }
+  body[data-theme="vintage"] .row label.k { color: #ddd2bf; font-size: 14.5px; }
+  body[data-theme="vintage"] .row .v label { color: #ddd2bf; font-size: 14.5px; }
+  body[data-theme="vintage"] select {
+    height: 21px; font-size: 14px; color: #f4ecdc; background: #000;
+    border: 1px solid rgba(244,236,220,.3); border-radius: 1px;
+  }
+  body[data-theme="vintage"] select option { background: #000; color: #f4ecdc; }
+  body[data-theme="vintage"] input[type=checkbox] {
+    -webkit-appearance: none; appearance: none;
+    flex: none; width: 32px; height: 15px; margin: 0;
+    background: #000 linear-gradient(#5a5148, #5a5148) no-repeat 1px 1px / 13px 11px;
+    border: 1px solid rgba(244,236,220,.35); border-radius: 1px;
+    cursor: pointer;
+    transition: background-position .16s, border-color .15s;
+  }
+  body[data-theme="vintage"] input[type=checkbox]:checked {
+    background: #2a0b0d linear-gradient(#f2c018, #f2c018) no-repeat 16px 1px / 13px 11px;
+    border-color: #d81f2a;
+    box-shadow: inset 0 0 6px rgba(242,192,24,.4);
+  }
+  body[data-theme="vintage"] input[type=range]::-webkit-slider-runnable-track {
+    height: 8px; border-radius: 0; border: 1px solid rgba(244,236,220,.25);
+    background: linear-gradient(90deg, #f2c018 0%, #a97e08 var(--p, 50%), #000 var(--p, 50%), #000 100%);
+  }
+  body[data-theme="vintage"] input[type=range]::-webkit-slider-thumb {
+    width: 9px; height: 9px; margin-top: -1.5px; border-radius: 0;
+    background: #f2c018; border: 1px solid #000; box-shadow: none; transform: rotate(45deg);
+  }
+  body[data-theme="vintage"] .num { color: #c9a15a; font-family: "Anton", "Arial Black", Impact, sans-serif; font-size: 12.5px; }
+  body[data-theme="vintage"] .note { color: #8b8073; }
+  body[data-theme="vintage"] .path { color: #f2c018; }
+  body[data-theme="vintage"] .btn {
+    height: 22px; font-size: 14px; font-weight: 700;
+    color: #f4ecdc; background: #000;
+    border: 1px solid rgba(244,236,220,.28); border-radius: 1px;
+  }
+  body[data-theme="vintage"] .btn:hover { background: #f2c018; color: #000; border-color: #000; }
+  body[data-theme="plugin"] { --field-bg: rgba(127,127,127,.12); }
+  body[data-theme="plugin"] .btn { color: var(--btn-ink, var(--txt)); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 275px; height: 340px; overflow: hidden;
+    user-select: none;
+    font-family: var(--font); font-size: 15.5px;
+    background: #0a0e14; color: var(--txt);
+    -webkit-font-smoothing: antialiased;
+  }
+  .win {
+    width: 275px; height: 340px;
+    display: flex; flex-direction: column;
+    background: var(--win-bg);
+    border: 1px solid var(--win-border);
+  }
+  .title-bar {
+    -webkit-app-region: drag;
+    flex: 0 0 30px;
+    display: flex; align-items: center;
+    padding: 0 6px 0 12px;
+    font-size: 14.5px; font-weight: 600; letter-spacing: .04em;
+  }
+  body[data-theme="retro"] .title-bar { color: var(--accent); letter-spacing: .2em; font-size: 15.5px; }
+  .title-bar .name { flex: 1; }
+  .tb {
+    -webkit-app-region: no-drag;
+    width: 22px; height: 22px;
+    display: flex; align-items: center; justify-content: center;
+    border: 0; border-radius: 6px; background: transparent;
+    color: var(--sub); font-size: 17px; line-height: 1; cursor: pointer;
+  }
+  .tb:hover { color: #fff; background: #d9435a; }
+
+  .body { flex: 1; min-height: 0; padding: 2px 8px 10px 10px; overflow-y: auto; overflow-x: hidden; }
+  .body::-webkit-scrollbar-corner, .body::-webkit-scrollbar-track { background: transparent; }
+  .body::-webkit-scrollbar { width: 6px; }
+  .body::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+
+  fieldset { min-inline-size: 0; min-width: 0; }
+  .row .v > * { min-width: 0; max-width: 100%; }
+  .row select { width: 100%; text-overflow: ellipsis; font-size: 13.5px !important; }
+  fieldset .btn { white-space: normal; max-width: 100%; }
+  fieldset {
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    background: var(--card-bg);
+    padding: 4px 10px 8px;
+    margin-bottom: 8px;
+  }
+  legend {
+    padding: 0 5px;
+    font-size: 14.5px; font-weight: 700; letter-spacing: .06em;
+    color: var(--accent);
+  }
+  .row { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+  .row label.k { white-space: nowrap; flex: 0 0 46px; font-size: 15.5px; color: var(--sub); }
+  .row .v { flex: 1; display: flex; align-items: center; gap: 6px; min-width: 0; }
+  .row .v label { font-size: 15.5px; }
+
+  select {
+    flex: 1; min-width: 0;
+    height: 24px;
+    padding: 0 6px;
+    font-family: inherit; font-size: 15.5px;
+    color: var(--txt);
+    background: var(--field-bg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    outline: none;
+  }
+  select:focus { border-color: var(--accent); }
+  select option { background: #0e141d; color: #e8eef7; }
+  body[data-theme="retro"] select { border-radius: 0; }
+
+  input[type=checkbox] { accent-color: var(--accent); width: 13px; height: 13px; }
+
+  input[type=range] { -webkit-appearance: none; flex: 1; height: 14px; background: transparent; }
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 4px; border-radius: 2px;
+    background: linear-gradient(90deg, var(--accent) 0%, var(--accent) var(--p, 50%), var(--track-bg) var(--p, 50%), var(--track-bg) 100%);
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 11px; height: 11px; margin-top: -3.5px; border-radius: 50%;
+    background: #fff; box-shadow: 0 0 0 2px var(--accent), 0 0 8px var(--accent-glow);
+  }
+  body[data-theme="retro"] input[type=range]::-webkit-slider-thumb { border-radius: 0; background: var(--accent); }
+  .num { flex: 0 0 36px; text-align: right; color: var(--accent); font-size: 15.5px; font-variant-numeric: tabular-nums; }
+
+  .btn {
+    height: 26px;
+    padding: 0 10px;
+    font-family: inherit; font-size: 15.5px;
+    color: var(--txt);
+    background: var(--btn-bg);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    cursor: pointer;
+  }
+  .btn:hover { background: var(--btn-bg-hover); color: var(--accent); border-color: var(--accent); }
+  body[data-theme="retro"] .btn { border-radius: 0; }
+  .btn.full { width: 100%; }
+
+  .note { font-size: 14px; color: var(--sub); margin-top: 4px; line-height: 1.55; }
+  .path { font-size: 14px; color: var(--accent); word-break: break-all; margin-top: 4px; }
+</style>
+</head>
+<body data-theme="vintage">
+<div class="win">
+
+  <div class="title-bar">
+    <span class="name">オプション</span>
+    <button class="tb" id="btnClose" title="閉じる">×</button>
+  </div>
+
+  <div class="strip leopard"></div>
+
+  <div class="body">
+
+    <fieldset>
+      <legend><span class="lg">見た目</span></legend>
+      <div class="row">
+        <label class="k">スキン</label>
+        <div class="v">
+          <select id="theme">
+            <option value="vintage" selected>ヴィンテージロック</option>
+            <option value="rock">ロック（黒・赤・黄）</option>
+            <option value="white">ホワイト</option>
+            <option value="glass">ネオングラス</option>
+            <option value="retro">レトロフューチャー</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn full" id="btnSkinDir" style="margin-top:6px">スキンのフォルダを開く</button>
+      <div class="note">
+        フォルダに入れたスキンは、この窓を開き直すと一覧に出ます。
+        Winamp スキンを読み込んでいる間は、そちらが優先されます。
+        （ファイル →「標準スキンに戻す」で戻ります）
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend><span class="lg">再生</span></legend>
+
+      <div class="row">
+        <label class="k">音量</label>
+        <div class="v">
+          <input type="range" id="volume" min="0" max="200" value="100">
+          <span class="num" id="volumeNum">100%</span>
+        </div>
+      </div>
+      <div class="note" style="margin-top:0">
+        100% が原音です。音源が小さいときは 100% を超えて増幅できます
+        （最大200%）。上げすぎると音が割れることがあります。
+      </div>
+
+      <div class="row">
+        <label class="k">再生速度</label>
+        <div class="v">
+          <select id="speed">
+            <option value="0.5">0.5倍</option>
+            <option value="0.75">0.75倍</option>
+            <option value="1" selected>標準（1.0倍）</option>
+            <option value="1.25">1.25倍</option>
+            <option value="1.5">1.5倍</option>
+            <option value="2">2.0倍</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <label class="k">繰り返し</label>
+        <div class="v">
+          <select id="loop">
+            <option value="none" selected>なし</option>
+            <option value="one">1曲を繰り返す</option>
+            <option value="all">全曲を繰り返す</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <label class="k">シャッフル</label>
+        <div class="v">
+          <input type="checkbox" id="shuffle" style="flex:0 0 auto">
+          <label for="shuffle">順序をランダムにする</label>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend><span class="lg">音質</span></legend>
+      <div class="row">
+        <label class="k">ハイレゾ優先</label>
+        <div class="v">
+          <input type="checkbox" id="hires" style="flex:0 0 auto">
+          <label for="hires">スペクトラム表示を切って原音のまま出力</label>
+        </div>
+      </div>
+      <div class="note">
+        スペクトラム表示は音声を解析経路に通すため、
+        通常 48kHz に変換されます。96/192kHz のハイレゾを
+        そのまま出したい場合はここを有効にしてください。
+        <br><br>
+        ※ 切り替えは再生中の曲にもすぐ反映されます。
+        有効な間は音量の上限が 100% になります。
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend><span class="lg">曲名</span></legend>
+      <div class="row">
+        <label class="k">ネット補完</label>
+        <div class="v">
+          <input type="checkbox" id="netMeta" style="flex:0 0 auto">
+          <label for="netMeta">足りない曲名をネットで補う</label>
+        </div>
+      </div>
+      <div class="note">
+        オンの間、タグに曲名かアーティストがない曲について、
+        ファイル名（またはタグの一部）を MusicBrainz（musicbrainz.org）へ送って調べます。
+        結果は画面に出すだけで、ファイルのタグは書き換えません。
+        メモリにだけ置き、終了時に消えます。起動するたびにオフに戻ります。
+      </div>
+    </fieldset>
+
+    <fieldset id="fsCtx">
+      <legend><span class="lg">右クリック</span></legend>
+      <div class="row">
+        <label class="k">表示</label>
+        <div class="v">
+          <input type="checkbox" id="ctxMenu" style="flex:0 0 auto">
+          <label for="ctxMenu">右クリックに出す</label>
+        </div>
+      </div>
+      <div class="note">
+        エクスプローラーで曲や動画を右クリックすると「ちょこっとPLAYERで開く」が出ます。
+        複数選んで開くと、まとめてプレイリストになります。
+        Windows 11 では「その他のオプションを確認」の中に出ます。
+        ダブルクリックで開くアプリは変わりません。
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend><span class="lg">CD 取り込み</span></legend>
+      <button class="btn full" id="btnRipDir">保存先フォルダを作成／確認</button>
+      <div class="path" id="ripPath"></div>
+      <div class="note">
+        取り込み本体（WAV 変換・曲名の自動取得）は未実装です。
+        現在は保存先フォルダの準備のみ動作します。
+      </div>
+    </fieldset>
+
+    <button class="btn full" id="btnCloseBottom">閉じる</button>
+
+  </div>
+  <div class="strip checker"></div>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+
+  const volume = $('volume');
+  const volumeNum = $('volumeNum');
+  const speed = $('speed');
+  const loop = $('loop');
+  const shuffle = $('shuffle');
+
+  const hires = $('hires');
+  const netMeta = $('netMeta');
+  const ctxMenu = $('ctxMenu');
+  // 右クリックへの登録は Windows だけ（Mac・ブラウザ版では隠す）
+  if (window.electronAPI.platform !== 'win32') $('fsCtx').style.display = 'none';
+  const theme = $('theme');
+  const paintVol = () => volume.style.setProperty('--p', (volume.value / 2) + '%');
+  const BUILTIN_THEMES = ['vintage', 'rock', 'glass', 'retro', 'white'];
+  async function paintTheme() {
+    const t = theme.value;
+    for (const id of ['pluginSkinMain', 'pluginSkinOpt']) { const el = document.getElementById(id); if (el) el.remove(); }
+    if (t.startsWith('plugin:')) {
+      const id = t.slice(7);
+      const [a, b] = await Promise.all([
+        window.electronAPI.skinCss(id, 'main').catch(() => ''),
+        window.electronAPI.skinCss(id, 'options').catch(() => ''),
+      ]);
+      if (theme.value !== t) return;
+      if (a || b) {
+        for (const [sid, css] of [['pluginSkinMain', a], ['pluginSkinOpt', b]]) {
+          if (!css) continue;
+          const st = document.createElement('style'); st.id = sid; st.textContent = css;
+          document.head.appendChild(st);
+        }
+        document.body.dataset.theme = 'plugin';
+        return;
+      }
+    }
+    document.body.dataset.theme = BUILTIN_THEMES.includes(t) ? t : 'vintage';
+  }
+  /* 追加スキンの一覧を読み込んで選択肢に足す */
+  const skinsReady = (window.electronAPI.skinsList ? window.electronAPI.skinsList() : Promise.resolve([]))
+    .then((list) => {
+      if (!list || !list.length) return;
+      const g = document.createElement('optgroup');
+      g.label = '追加スキン';
+      for (const s of list) {
+        const o = document.createElement('option');
+        o.value = 'plugin:' + s.id;
+        o.textContent = s.name;
+        g.appendChild(o);
+      }
+      theme.appendChild(g);
+    }).catch(() => {});
+  $('btnSkinDir').onclick = () => window.electronAPI.skinsOpenDir();
+
+  function push() {
+    window.electronAPI.pushSettings({
+      volume: Number(volume.value),
+      speed: Number(speed.value),
+      loop: loop.value,
+      shuffle: shuffle.checked,
+      hires: hires.checked,
+      netMeta: netMeta.checked,
+      theme: theme.value,
+      ctxMenu: ctxMenu.checked,
+    });
+  }
+
+  volume.addEventListener('input', () => {
+    volumeNum.textContent = volume.value + '%';
+    paintVol();
+    push();
+  });
+  speed.addEventListener('change', push);
+  loop.addEventListener('change', push);
+  shuffle.addEventListener('change', push);
+  hires.addEventListener('change', push);
+  netMeta.addEventListener('change', push);
+  ctxMenu.addEventListener('change', push);
+  theme.addEventListener('change', () => { paintTheme(); push(); });
+
+  /* 保存されている設定で画面を初期化する。
+     これが無いと、実際は有効なのに画面上は切れて見える。 */
+  skinsReady.then(() => window.electronAPI.getSettings()).then((s) => {
+    if (!s) return;
+    volume.value = s.volume;
+    volumeNum.textContent = s.volume + '%';
+    speed.value = String(s.speed);
+    loop.value = s.loop;
+    shuffle.checked = !!s.shuffle;
+    hires.checked = !!s.hires;
+    netMeta.checked = !!s.netMeta;
+    ctxMenu.checked = s.ctxMenu !== false;
+    theme.value = s.theme;
+    if (theme.value !== s.theme) theme.value = 'vintage';
+    paintTheme();
+    paintVol();
+  }).catch(() => {});
+
+  $('btnRipDir').onclick = async () => {
+    const dir = await window.electronAPI.ripDir();
+    $('ripPath').textContent = '保存先: ' + dir;
+  };
+
+  $('btnClose').onclick = () => window.electronAPI.close();
+  $('btnCloseBottom').onclick = () => window.electronAPI.close();
+</script>
+</body>
+</html>

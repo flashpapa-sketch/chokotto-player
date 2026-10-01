@@ -1,0 +1,12 @@
+/* ===== 12. kawaii: パステル（ピンク＋ミント、まるい） ===== */
+body[data-theme="plugin"]{--txt:#5b3b5a;--sub:#b08bb0;--line:rgba(200,120,180,.35);--accent:#ff7fb6;--accent-glow:rgba(255,127,182,.4);--gold:#7fd9c4;--hot:#ff7fb6;--radius:12px;--r-sm:8px;
+ --win-bg:radial-gradient(circle,#fff 1.5px,transparent 2px) 0 0/14px 14px,linear-gradient(180deg,#ffe1f0,#e3f7f2);--win-border:#ffb3d6;--card-bg:#fff;--btn-bg:#fff;--btn-bg-hover:#ffe8f3;--play-bg:linear-gradient(180deg,#ff9cc8,#ff6fae);--play-ink:#fff;
+ --track-bg:#ffd6ea;--viz-a:#ff7fb6;--viz-b:#7fd9c4;--viz-idle:rgba(255,127,182,.2);--font:"Zen Maru Gothic", "Yu Gothic UI", sans-serif;--mono:"Zen Maru Gothic", sans-serif;--time-font:"Zen Maru Gothic", sans-serif}
+body[data-theme="plugin"] .display{border:2px solid #ffc4e0;box-shadow:0 3px 0 #ffc4e0}
+body[data-theme="plugin"] .cbtn,body[data-theme="plugin"] .sbtn{color:#ff6fae;border:2px solid #ffc4e0;box-shadow:0 3px 0 #ffc4e0}
+body[data-theme="plugin"] .sbtn{border-radius:999px}
+body[data-theme="plugin"] .cbtn.play{box-shadow:0 3px 0 #e0508f}
+body[data-theme="plugin"] #viz{background:#fff;border-radius:12px}
+body[data-theme="plugin"] .brand::after{content:" ♡";color:#ff7fb6}
+body[data-theme="plugin"] .badge{background:#7fd9c4;color:#fff;box-shadow:none;border-radius:999px}
+body[data-theme="plugin"] .cbtn.play{color:#fff}

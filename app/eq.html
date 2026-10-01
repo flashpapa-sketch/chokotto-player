@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<script src="web-api.js"></script>
+<title>イコライザ</title>
+<style>
+  /* 本体と同じ青い Winamp 風。寸法も 275x116 で揃える。 */
+  :root {
+    --chassis-a: #4a5a69;
+    --chassis-b: #202a34;
+    --edge-lo:   #131a21;
+    --ink:       #dff0fb;
+    --accent:    #21e065;
+    --lcd-bg:    #06120c;
+    --btn-a:     #55697a;
+    --btn-b:     #2c3a47;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 275px; height: 116px;
+    overflow: hidden; user-select: none; cursor: default;
+    background: transparent;
+    font-family: "MS UI Gothic", "ＭＳ Ｐゴシック", sans-serif;
+  }
+
+  .win {
+    position: relative;
+    width: 275px; height: 116px;
+    display: flex; flex-direction: column;
+    background: linear-gradient(180deg, var(--chassis-a) 0%, #33414e 46%, var(--chassis-b) 100%);
+    border: 1px solid;
+    border-color: #6d7f8f var(--edge-lo) var(--edge-lo) #6d7f8f;
+  }
+  .win::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(180deg,
+      rgba(255,255,255,.028) 0px, rgba(255,255,255,.028) 1px,
+      rgba(0,0,0,0) 1px, rgba(0,0,0,0) 3px);
+  }
+  .win > * { position: relative; z-index: 2; }
+
+  /* ---- タイトルバー ---- */
+  .bar {
+    -webkit-app-region: drag;
+    flex: 0 0 17px;
+    display: flex; align-items: center; gap: 4px;
+    padding: 0 3px;
+    background: linear-gradient(180deg, #4f88ad 0%, #2b5f80 48%, #17405a 100%);
+    border-bottom: 1px solid var(--edge-lo);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.30);
+    color: var(--ink); font-size: 14px;
+    text-shadow: 0 1px 0 rgba(0,0,0,.55);
+  }
+  .bar .name { flex: 1; font-size: 12.5px; letter-spacing: .1em; }
+
+  .sw {
+    -webkit-app-region: no-drag;
+    height: 12px; padding: 0 5px;
+    border: 1px solid;
+    border-color: #9fd0ea var(--edge-lo) var(--edge-lo) #9fd0ea;
+    background: linear-gradient(180deg, #5c94b8, #23566f);
+    color: var(--ink);
+    font-family: inherit; font-size: 11px; line-height: 1;
+    cursor: pointer;
+  }
+  .sw.on { background: linear-gradient(180deg, #2fbf6a, #14723e); }
+  .sw:active { border-color: var(--edge-lo) #9fd0ea #9fd0ea var(--edge-lo); }
+
+  .tb {
+    -webkit-app-region: no-drag;
+    width: 13px; height: 12px; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid;
+    border-color: #9fd0ea var(--edge-lo) var(--edge-lo) #9fd0ea;
+    background: linear-gradient(180deg, #5c94b8, #23566f);
+    color: var(--ink); font-size: 12.5px; line-height: 1; cursor: pointer;
+  }
+  .tb:hover { background: linear-gradient(180deg, #c96060, #8c2a2a); }
+
+  /* ---- スライダー列 ---- */
+  .body { flex: 1; display: flex; align-items: stretch; padding: 3px 4px 2px; gap: 3px; }
+
+  .slot { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+  .slot.pre { margin-right: 3px; padding-right: 4px; border-right: 1px solid rgba(0,0,0,.4); }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    writing-mode: vertical-lr;
+    direction: rtl;
+    width: 12px; height: 58px;
+    background: transparent;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-runnable-track {
+    width: 5px; height: 58px;
+    background: linear-gradient(180deg, #12191f, #1d2831);
+    border: 1px solid;
+    border-color: var(--edge-lo) #5f7484 #5f7484 var(--edge-lo);
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 13px; height: 7px;
+    margin-left: -5px;
+    background: linear-gradient(180deg, #7fa8c4, #2f5f7c);
+    border: 1px solid;
+    border-color: #c3e2f5 var(--edge-lo) var(--edge-lo) #c3e2f5;
+  }
+
+  .hz {
+    font-size: 10px; color: #b9d6ea; letter-spacing: -.02em;
+    font-family: Consolas, monospace;
+  }
+  .slot.pre .hz { color: var(--accent); }
+
+  /* ---- 下段 ---- */
+  .foot {
+    flex: 0 0 15px;
+    display: flex; align-items: center; gap: 4px;
+    padding: 0 5px 2px;
+    font-size: 12.5px; color: #b9d6ea;
+  }
+  select {
+    flex: 1;
+    background: var(--lcd-bg); color: var(--accent);
+    border: 1px solid;
+    border-color: var(--edge-lo) #5f7484 #5f7484 var(--edge-lo);
+    font-family: inherit; font-size: 12.5px;
+    padding: 0 2px;
+  }
+  .val {
+    font-family: Consolas, monospace; font-size: 12.5px;
+    color: var(--accent); min-width: 46px; text-align: right;
+  }
+  /* 見やすさ調整：10 本を等間隔に並べ、下段が切れないようにする */
+  .body { justify-content: space-between; padding: 4px 7px 2px !important; gap: 0 !important; min-height: 0; }
+  .slot { flex: 1 1 0; min-width: 0; }
+  .slot.pre { flex: 0 0 auto; margin-right: 4px; padding-right: 6px; }
+  html, body, .win { height: 100vh !important; }
+  input[type=range] { height: calc(100vh - 62px) !important; }
+  input[type=range]::-webkit-slider-runnable-track { height: calc(100vh - 62px) !important; }
+  .hz { line-height: 12px; height: 12px; }
+  .hz { font-size: 9.5px !important; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+  .foot { flex: 0 0 21px !important; padding: 0 7px 4px !important; gap: 6px !important; }
+  .foot select { height: 16px; font-size: 11.5px !important; }
+  .val { font-size: 11.5px !important; min-width: 40px !important; font-variant-numeric: tabular-nums; }
+</style>
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="skin-vars.css">
+<link rel="stylesheet" id="skinWindowsCss" href="skin-windows.css">
+</head>
+<body data-theme="vintage">
+<div class="win">
+
+  <div class="bar">
+    <span class="name">イコライザ</span>
+    <button class="sw" id="power">OFF</button>
+    <button class="tb" id="close">×</button>
+  </div>
+
+  <div class="body" id="sliders"></div>
+
+  <div class="foot">
+    <select id="preset">
+      <option value="flat">フラット</option>
+      <option value="rock">ロック</option>
+      <option value="pop">ポップ</option>
+      <option value="jazz">ジャズ</option>
+      <option value="classic">クラシック</option>
+      <option value="bass">低音強調</option>
+      <option value="treble">高音強調</option>
+      <option value="vocal">ボーカル</option>
+    </select>
+    <span class="val" id="readout">-- dB</span>
+  </div>
+
+</div>
+
+<script>
+  const api = window.electronAPI;
+
+  // Winamp と同じ 10 バンド
+  const BANDS = [70, 180, 320, 600, 1000, 3000, 6000, 12000, 14000, 16000];
+  const LABEL = ['70', '180', '320', '600', '1k', '3k', '6k', '12k', '14k', '16k'];
+
+  const PRESETS = {
+    flat:    [0,0,0,0,0,0,0,0,0,0],
+    rock:    [5,4,2,-1,-2,0,3,5,5,5],
+    pop:     [-1,2,4,4,2,0,-1,-1,-1,-1],
+    jazz:    [4,3,1,2,-1,-1,0,1,3,4],
+    classic: [5,4,3,2,-1,-1,0,2,3,4],
+    bass:    [8,7,5,2,0,0,0,0,0,0],
+    treble:  [0,0,0,0,0,2,4,6,7,8],
+    vocal:   [-2,-1,0,3,5,5,3,1,0,-1],
+  };
+
+  let power = false;
+  let preamp = 0;
+  let gains = PRESETS.flat.slice();
+
+  const slidersEl = document.getElementById('sliders');
+  const readout = document.getElementById('readout');
+  const powerBtn = document.getElementById('power');
+
+  function makeSlot(label, isPre) {
+    const slot = document.createElement('div');
+    slot.className = 'slot' + (isPre ? ' pre' : '');
+    const r = document.createElement('input');
+    r.type = 'range'; r.min = '-12'; r.max = '12'; r.step = '1'; r.value = '0';
+    const t = document.createElement('span');
+    t.className = 'hz'; t.textContent = label;
+    slot.appendChild(r); slot.appendChild(t);
+    slidersEl.appendChild(slot);
+    return r;
+  }
+
+  const preSlider = makeSlot('PRE', true);
+  const bandSliders = LABEL.map((l) => makeSlot(l, false));
+
+  function send() {
+    api.eqApply({ enabled: power, preamp, bands: BANDS, gains });
+  }
+
+  function show(txt) { readout.textContent = txt; }
+
+  preSlider.addEventListener('input', () => {
+    preamp = Number(preSlider.value);
+    show('PRE ' + (preamp > 0 ? '+' : '') + preamp + ' dB');
+    send();
+  });
+
+  bandSliders.forEach((s, i) => {
+    s.addEventListener('input', () => {
+      gains[i] = Number(s.value);
+      show(LABEL[i] + ' ' + (gains[i] > 0 ? '+' : '') + gains[i] + ' dB');
+      send();
+    });
+  });
+
+  powerBtn.addEventListener('click', () => {
+    power = !power;
+    powerBtn.textContent = power ? 'ON' : 'OFF';
+    powerBtn.classList.toggle('on', power);
+    show(power ? '有効' : '無効');
+    send();
+  });
+
+  document.getElementById('preset').addEventListener('change', (e) => {
+    const p = PRESETS[e.target.value] || PRESETS.flat;
+    gains = p.slice();
+    bandSliders.forEach((s, i) => { s.value = String(gains[i]); });
+    if (!power) { power = true; powerBtn.textContent = 'ON'; powerBtn.classList.add('on'); }
+    show(e.target.selectedOptions[0].textContent);
+    send();
+  });
+
+  document.getElementById('close').onclick = () => api.close();
+  window.addEventListener('keydown', (e) => { if (e.key === 'Escape') api.close(); });
+
+  show('無効');
+</script>
+<script src="skin-apply.js"></script>
+</body>
+</html>

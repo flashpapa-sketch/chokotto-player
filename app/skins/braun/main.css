@@ -1,0 +1,12 @@
+/* ===== 11. braun: ブラウン風インダストリアル（オフホワイト＋オレンジ） ===== */
+body[data-theme="plugin"]{--txt:#2c2c2a;--sub:#8b8a85;--line:rgba(0,0,0,.12);--accent:#ef6b1f;--accent-glow:rgba(0,0,0,0);--gold:#ef6b1f;--hot:#ef6b1f;--radius:12px;--r-sm:8px;
+ --win-bg:radial-gradient(circle,#b9b8b2 1px,transparent 1.4px) 0 0/6px 6px,#ecebe6;--win-border:#c9c7c0;--card-bg:#2c2c2a;--btn-bg:#dcdad3;--btn-bg-hover:#e9e7e0;--play-bg:#ef6b1f;--play-ink:#fff;
+ --track-bg:#555;--viz-a:#ef6b1f;--viz-b:#ffd3b0;--viz-idle:rgba(239,107,31,.2);--font:"Zen Kaku Gothic New", "Segoe UI", sans-serif;--mono:"Space Mono", monospace;--time-font:"Zen Kaku Gothic New", sans-serif}
+body[data-theme="plugin"] .display{border:0}
+body[data-theme="plugin"] .track,body[data-theme="plugin"] #time{color:#f2f1ec}
+body[data-theme="plugin"] #viz{background:#2c2c2a}
+body[data-theme="plugin"] .cbtn,body[data-theme="plugin"] .sbtn{color:#2c2c2a;border:0;box-shadow:0 2px 0 #b2b0a8}
+body[data-theme="plugin"] .cbtn.play{box-shadow:0 2px 0 #b8521a}
+body[data-theme="plugin"] .brand{font-weight:500;letter-spacing:.02em;text-transform:lowercase}
+body[data-theme="plugin"] .brand svg{color:#ef6b1f;filter:none}
+body[data-theme="plugin"] .badge{background:#ef6b1f;color:#fff;box-shadow:none}

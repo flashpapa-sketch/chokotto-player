@@ -1,0 +1,80 @@
+/* 内蔵スキンの配色（index.html の変数ブロックと同じ）。別窓（CD取り込み・プレイリスト・EQ・ヘルプ・動画）で使う。 */
+body[data-theme="glass"], body:not([data-theme]), body[data-theme="glass"] {
+    --txt: #e8eef7; --sub: #7b8ba1; --line: rgba(255,255,255,.12);
+    --glass: rgba(255,255,255,.055);
+    --accent: #3ee7f2; --accent-glow: rgba(62,231,242,.55);
+    --hot: #ff5fa2; --gold: #ffc861; --ng: #ff7a6b;
+    --radius: 8px; --r-sm: 5px;
+    --win-bg: radial-gradient(120% 90% at 50% -20%, #1b2a3d 0%, transparent 60%), linear-gradient(180deg, #0e141d 0%, #0a0e14 100%);
+    --win-border: rgba(120,200,255,.18);
+    --card-bg: rgba(0,0,0,.35);
+    --btn-bg: rgba(255,255,255,.07); --btn-bg-hover: rgba(62,231,242,.18);
+    --play-bg: linear-gradient(180deg, #5ff0f8, #1fb8c6); --play-ink: #04161a;
+    --track-bg: rgba(255,255,255,.12);
+    --viz-a: #1b6b7a; --viz-b: #3ee7f2; --viz-idle: rgba(62,231,242,.14);
+    --font: "Zen Kaku Gothic New", "Yu Gothic UI", "Meiryo UI", "Meiryo", sans-serif;
+    --mono: "Space Mono", "Consolas", monospace;
+    --time-font: "Orbitron", "Space Mono", monospace;
+  }
+  body[data-theme="vintage"] {
+    --black: #0b0a09; --red: #d81f2a; --red-d: #8f1119; --yellow: #f2c018; --cream: #f4ecdc; --tan: #c9a15a;
+    --txt: #f4ecdc; --sub: #c9a15a; --line: rgba(244,236,220,.26);
+    --accent: #f2c018; --accent-glow: rgba(242,192,24,.5);
+    --gold: #f2c018; --hot: #d81f2a; --ng: #ff6b5b;
+    --radius: 0; --r-sm: 0;
+    --win-bg: #0b0a09; --win-border: #d81f2a;
+    --card-bg: #000;
+    --btn-bg: linear-gradient(180deg, #2a221c, #0d0b0a); --btn-bg-hover: linear-gradient(180deg, #3a2e25, #15110e);
+    --play-bg: linear-gradient(180deg, #ec3a45, #9c121a); --play-ink: #fff;
+    --track-bg: #000;
+    --viz-grad: #7a0f16, #d81f2a, #f08a10, #f2c018;
+    --viz-idle: rgba(242,192,24,.16);
+    --font: "Zen Kaku Gothic New", "Yu Gothic UI", "Meiryo", sans-serif;
+    --mono: "Anton", "Arial Black", Impact, sans-serif;
+    --time-font: "Anton", Impact, sans-serif;
+  }
+  body[data-theme="rock"] {
+    --black: #11100f; --red: #d71920; --red-dark: #8e1118; --yellow: #f5c400; --cream: #f5e7b2; --white: #fff4ce; --navy: #171d36;
+    --txt: #11100f; --sub: #11100f; --line: #11100f;
+    --accent: #d71920; --accent-glow: rgba(0,0,0,0); --gold: #d71920; --ng: #d71920;
+    --radius: 0; --r-sm: 0;
+    --win-bg: linear-gradient(135deg, transparent 0 48%, rgba(255,255,255,.08) 49% 51%, transparent 52%), #f5e7b2;
+    --win-border: #11100f;
+    --card-bg: #171d36;
+    --btn-bg: #f5c400; --btn-bg-hover: #fff4ce;
+    --play-bg: #d71920; --play-ink: #fff4ce;
+    --track-bg: #fff4ce;
+    --viz-a: #d71920; --viz-m: #f5c400; --viz-b: #fff4ce; --viz-idle: rgba(245,196,0,.25);
+    --font: "Zen Kaku Gothic New", "Yu Gothic UI", "Meiryo", sans-serif;
+    --mono: "Anton", Impact, sans-serif;
+    --time-font: "Anton", Impact, sans-serif;
+  }
+  body[data-theme="white"] {
+    --txt: #16181d; --sub: #8a8f99; --line: rgba(0,0,0,.09);
+    --accent: #16181d; --accent-glow: rgba(0,0,0,0); --gold: #0a84ff; --hot: #0a84ff; --ng: #d93a3a;
+    --radius: 10px; --r-sm: 6px;
+    --win-bg: linear-gradient(180deg, #fbfbfc 0%, #eef0f3 100%); --win-border: rgba(0,0,0,.12);
+    --card-bg: #ffffff;
+    --btn-bg: #ffffff; --btn-bg-hover: #eef0f4;
+    --play-bg: #16181d; --play-ink: #fff;
+    --track-bg: #dfe1e6;
+    --viz-a: #c9ccd3; --viz-b: #16181d; --viz-idle: #e6e8ec;
+    --font: "Zen Kaku Gothic New", "Yu Gothic UI", "Segoe UI", sans-serif;
+    --mono: "Space Mono", "Consolas", monospace;
+    --time-font: "Zen Kaku Gothic New", "Segoe UI", sans-serif;
+  }
+  body[data-theme="retro"] {
+    --txt: #c8f0f0; --sub: #4f8585; --line: rgba(0,255,200,.3);
+    --accent: #00ffc8; --accent-glow: rgba(0,255,200,.55); --hot: #ff006e; --gold: #ff006e; --ng: #ff5a5a;
+    --radius: 2px; --r-sm: 0;
+    --win-bg: linear-gradient(rgba(0,255,200,.07) 1px, transparent 1px) 0 0 / 6px 6px, linear-gradient(90deg, rgba(0,255,200,.07) 1px, transparent 1px) 0 0 / 6px 6px, #071414;
+    --win-border: #00ffc8;
+    --card-bg: #000;
+    --btn-bg: transparent; --btn-bg-hover: rgba(0,255,200,.12);
+    --play-bg: transparent; --play-ink: #00ffc8;
+    --track-bg: #1d3a3a;
+    --viz-a: #00ffc8; --viz-b: #ffffff; --viz-idle: rgba(0,255,200,.15);
+    --font: "DotGothic16", "Zen Kaku Gothic New", monospace;
+    --mono: "Space Mono", "Consolas", monospace;
+    --time-font: "Orbitron", monospace;
+  }

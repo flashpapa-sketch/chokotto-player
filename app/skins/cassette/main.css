@@ -1,0 +1,11 @@
+/* ===== 2. cassette: カセットデッキ（グレー樹脂＋虹ストライプ） ===== */
+body[data-theme="plugin"]{--txt:#2b2b2b;--sub:#6d6a64;--line:rgba(0,0,0,.18);--accent:#e8492b;--accent-glow:rgba(0,0,0,0);--gold:#e8492b;--hot:#e8492b;--radius:10px;--r-sm:6px;
+ --win-bg:linear-gradient(180deg,#d9d5cc,#bfbab0);--win-border:#8c877d;--card-bg:#f4efe3;--btn-bg:linear-gradient(180deg,#4a4a4a,#2a2a2a);--btn-bg-hover:linear-gradient(180deg,#5a5a5a,#333);
+ --play-bg:linear-gradient(180deg,#f06a3f,#c9391c);--play-ink:#fff;--track-bg:#cfc8b8;--viz-a:#e8492b;--viz-m:#f6a11a;--viz-b:#ffd84a;--viz-idle:rgba(0,0,0,.08);--font:"Zen Maru Gothic", "Yu Gothic UI", sans-serif;--mono:"Space Mono", monospace;--time-font:"Space Mono", monospace}
+body[data-theme="plugin"] .display{background:linear-gradient(180deg,#e8492b 0 2px,#f6a11a 2px 4px,#ffd84a 4px 6px,#f4efe3 6px);border:1px solid #a39c8e}
+body[data-theme="plugin"] .track{font-family:"Segoe Print","Comic Sans MS","Yu Gothic UI",cursive;font-weight:700}
+body[data-theme="plugin"] .cbtn,body[data-theme="plugin"] .sbtn{color:#eee;border-radius:4px;border:1px solid #111;box-shadow:0 2px 0 #111}
+body[data-theme="plugin"] .cbtn.play{border-radius:4px}
+body[data-theme="plugin"] #viz{background:#2b2b2b;border-radius:4px}
+body[data-theme="plugin"] .brand{font-weight:900;letter-spacing:.1em}
+body[data-theme="plugin"]{--btn-ink:#eee}

@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<script src="web-api.js"></script>
+<title>音楽CDから取り込む</title>
+<style>
+  :root {
+    --chassis-a: #4a5a69;
+    --chassis-b: #202a34;
+    --edge-lo:   #131a21;
+    --ink:       #dff0fb;
+    --accent:    #21e065;
+    --lcd-bg:    #06120c;
+    --btn-a:     #55697a;
+    --btn-b:     #2c3a47;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden; user-select: none; cursor: default;
+    font-family: "MS UI Gothic", "ＭＳ Ｐゴシック", sans-serif;
+    background: var(--chassis-b);
+  }
+
+  .win {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    background: linear-gradient(180deg, var(--chassis-a) 0%, #33414e 18%, var(--chassis-b) 100%);
+    border: 1px solid;
+    border-color: #6d7f8f var(--edge-lo) var(--edge-lo) #6d7f8f;
+  }
+
+  .bar {
+    -webkit-app-region: drag;
+    flex: 0 0 17px;
+    display: flex; align-items: center;
+    padding: 0 3px;
+    background: linear-gradient(180deg, #4f88ad 0%, #2b5f80 48%, #17405a 100%);
+    border-bottom: 1px solid var(--edge-lo);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.30);
+    color: var(--ink); font-size: 12.5px; letter-spacing: .1em;
+    text-shadow: 0 1px 0 rgba(0,0,0,.55);
+  }
+  .bar .name { flex: 1; }
+  .tb {
+    -webkit-app-region: no-drag;
+    width: 13px; height: 12px; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid;
+    border-color: #9fd0ea var(--edge-lo) var(--edge-lo) #9fd0ea;
+    background: linear-gradient(180deg, #5c94b8, #23566f);
+    color: var(--ink); font-size: 12.5px; cursor: pointer;
+  }
+  .tb:hover { background: linear-gradient(180deg, #c96060, #8c2a2a); }
+
+  /* ---- 上段の状態表示 ---- */
+  .head {
+    margin: 5px 5px 3px;
+    padding: 4px 6px;
+    background: var(--lcd-bg);
+    border: 1px solid;
+    border-color: var(--edge-lo) #5f7484 #5f7484 var(--edge-lo);
+    box-shadow: inset 0 0 8px rgba(0,0,0,.85);
+    color: var(--accent);
+    font-size: 15.5px; line-height: 1.5;
+    min-height: 34px;
+  }
+  .head .sub { font-size: 14px; opacity: .7; }
+
+  /* ---- トラック一覧 ---- */
+  .list {
+    flex: 1;
+    margin: 0 5px;
+    background: var(--lcd-bg);
+    border: 1px solid;
+    border-color: var(--edge-lo) #5f7484 #5f7484 var(--edge-lo);
+    box-shadow: inset 0 0 8px rgba(0,0,0,.85);
+    overflow-y: auto;
+  }
+  .list::-webkit-scrollbar { width: 10px; }
+  .list::-webkit-scrollbar-track { background: #0a1a12; }
+  .list::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #4a7f9c, #21506a);
+    border: 1px solid;
+    border-color: #7fb6d6 var(--edge-lo) var(--edge-lo) #7fb6d6;
+  }
+
+  .row {
+    display: flex; align-items: center; gap: 6px;
+    padding: 2px 6px;
+    font-size: 15.5px; line-height: 16px;
+    color: var(--accent);
+    cursor: pointer;
+  }
+  .row:hover { background: rgba(33,224,101,.10); }
+  .row input { cursor: pointer; margin: 0; }
+  .row .no  { width: 22px; font-family: Consolas, monospace; opacity: .7; }
+  .row .len { width: 42px; font-family: Consolas, monospace; text-align: right; opacity: .8; }
+  .row .ttl { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row .st  { width: 76px; font-size: 14px; opacity: .8; text-align: right; }
+  .row.doing { background: #1d4f7a; color: #fff; }
+  .row.ok .st { color: #7dffb0; }
+
+  .empty { padding: 12px; font-size: 15.5px; text-align: center; color: #17b846; }
+
+  /* ---- 進み具合 ---- */
+  .prog {
+    margin: 4px 5px 0;
+    height: 12px;
+    background: var(--lcd-bg);
+    border: 1px solid;
+    border-color: var(--edge-lo) #5f7484 #5f7484 var(--edge-lo);
+    position: relative;
+  }
+  .prog .fill {
+    height: 100%; width: 0;
+    background: linear-gradient(180deg, #3affa0, #12a04e);
+    transition: width .15s linear;
+  }
+  .prog .txt {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12.5px; color: #dff0fb; text-shadow: 0 0 3px #000;
+  }
+
+  /* ---- 下段 ---- */
+  .foot {
+    flex: 0 0 auto;
+    display: flex; align-items: center; gap: 3px;
+    padding: 4px 5px 5px;
+  }
+  .btn {
+    height: 19px; padding: 0 9px;
+    border: 1px solid;
+    border-color: #8296a6 var(--edge-lo) var(--edge-lo) #8296a6;
+    background: linear-gradient(180deg, var(--btn-a), var(--btn-b));
+    color: var(--ink);
+    font-family: inherit; font-size: 14px;
+    cursor: pointer;
+  }
+  .btn:hover:not(:disabled) { background: linear-gradient(180deg, #6a8093, #354655); }
+  .btn:active:not(:disabled) { border-color: var(--edge-lo) #8296a6 #8296a6 var(--edge-lo); }
+  .btn:disabled { opacity: .45; cursor: default; }
+  .btn.go {
+    margin-left: auto;
+    background: linear-gradient(180deg, #2f9c5a, #14602f);
+    border-color: #6ddb9b var(--edge-lo) var(--edge-lo) #6ddb9b;
+  }
+  .btn.go:hover:not(:disabled) { background: linear-gradient(180deg, #3ec173, #187a3c); }
+
+  .sel {
+    height: 19px;
+    border: 1px solid;
+    border-color: var(--edge-lo) #8296a6 #8296a6 var(--edge-lo);
+    background: var(--lcd-bg);
+    color: var(--accent);
+    font-family: inherit; font-size: 14px;
+    cursor: pointer;
+  }
+  .sel:disabled { opacity: .45; cursor: default; }
+</style>
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="skin-vars.css">
+<link rel="stylesheet" id="skinWindowsCss" href="skin-windows.css">
+</head>
+<body data-theme="vintage">
+<div class="win">
+
+  <div class="bar">
+    <span class="name">音楽CDから取り込む</span>
+    <button class="tb" id="close">×</button>
+  </div>
+
+  <div class="head" id="head">ディスクを調べています…</div>
+
+  <div class="list" id="list"></div>
+
+  <div class="prog"><div class="fill" id="fill"></div><div class="txt" id="ptxt"></div></div>
+
+  <div class="foot">
+    <button class="btn" id="all">全選択</button>
+    <button class="btn" id="none">全解除</button>
+    <button class="btn" id="lookup">曲名取得</button>
+    <select class="sel" id="fmt" title="保存する形式">
+      <option value="flac">FLAC 可逆圧縮（約 6割）</option>
+      <option value="mp3:320">MP3 320kbps 固定（約 1/4）</option>
+      <option value="mp3:v0">MP3 高音質 可変（約 1/5）</option>
+      <option value="mp3:v2">MP3 標準 可変（約 1/7）</option>
+      <option value="mp3:192">MP3 192kbps 固定（約 1/7）</option>
+      <option value="mp3:128">MP3 128kbps 固定（約 1/11）</option>
+      <option value="wav">WAV 無変換（そのまま）</option>
+    </select>
+    <button class="btn go" id="go" disabled>取り込む</button>
+  </div>
+
+</div>
+
+<script>
+  const api = window.electronAPI;
+  const headEl = document.getElementById('head');
+  const listEl = document.getElementById('list');
+  const fillEl = document.getElementById('fill');
+  const ptxtEl = document.getElementById('ptxt');
+  const goEl   = document.getElementById('go');
+
+  let disc = null;      // { drive, tracks:[...] }
+  let meta = null;      // MusicBrainz から得たアルバム情報
+  let busy = false;
+
+  const fmt = (sec) => {
+    const s = Math.floor(sec);                       // 切り捨て。四捨五入すると 3:34 が 4:35 になる
+    return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  };
+
+  function setBusy(v) {
+    busy = v;
+    for (const id of ['all', 'none', 'lookup', 'go', 'fmt']) document.getElementById(id).disabled = v;
+    document.querySelectorAll('.row input').forEach((c) => { c.disabled = v; });
+  }
+
+  /** 番号 → 曲名・アーティスト */
+  function nameOf(no) {
+    if (!meta) return null;
+    return meta.tracks.find((t) => t.no === no) || null;
+  }
+
+  function render() {
+    listEl.innerHTML = '';
+    if (!disc) { listEl.innerHTML = '<div class="empty">ディスクがありません</div>'; goEl.disabled = true; return; }
+
+    disc.tracks.forEach((t) => {
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.dataset.no = t.no;
+
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = t.audio;
+      cb.disabled = !t.audio;
+
+      const no = document.createElement('span');
+      no.className = 'no';
+      no.textContent = String(t.no).padStart(2, '0');
+
+      const len = document.createElement('span');
+      len.className = 'len';
+      len.textContent = fmt(t.seconds);
+
+      const info = nameOf(t.no);
+      const ttl = document.createElement('span');
+      ttl.className = 'ttl';
+      ttl.textContent = info ? info.title : '';
+      if (info) ttl.title = `${info.title} / ${info.artist}`;
+
+      const st = document.createElement('span');
+      st.className = 'st';
+      st.textContent = t.audio ? '' : 'データ';
+
+      row.appendChild(cb); row.appendChild(no); row.appendChild(len);
+      row.appendChild(ttl); row.appendChild(st);
+      row.addEventListener('click', (e) => {
+        if (busy || !t.audio) return;
+        if (e.target !== cb) cb.checked = !cb.checked;
+      });
+      listEl.appendChild(row);
+    });
+
+    goEl.disabled = false;
+  }
+
+  async function scan() {
+    headEl.textContent = 'ディスクを調べています…';
+    listEl.innerHTML = '';
+    disc = null; goEl.disabled = true;
+
+    const r = await api.cdScan();
+    if (!r || !r.ok) {
+      headEl.innerHTML = (r && r.error ? r.error : '読み取れませんでした。');
+      listEl.innerHTML = '<div class="empty">—</div>';
+      return r;
+    }
+    disc = r;
+    const audio = r.tracks.filter((t) => t.audio);
+    const total = r.tracks.reduce((a, t) => a + t.seconds, 0);
+    headEl.innerHTML = `ドライブ ${r.drive}: に音楽CD`
+      + `<div class="sub">${audio.length} トラック / 合計 ${fmt(total)}</div>`;
+    render();
+  }
+
+  api.onCdProgress((p) => {
+    const row = listEl.querySelector(`.row[data-no="${p.track}"]`);
+    if (p.phase === 'start') {
+      listEl.querySelectorAll('.row').forEach((r) => r.classList.remove('doing'));
+      if (row) { row.classList.add('doing'); row.querySelector('.st').textContent = '取り込み中'; }
+    } else if (p.phase === 'rip') {
+      fillEl.style.width = p.pct + '%';
+      ptxtEl.textContent = `${p.index + 1} / ${p.count} 曲目  読み取り ${p.pct}%`;
+      if (row) row.querySelector('.st').textContent = p.pct + '%';
+    } else if (p.phase === 'conv') {
+      ptxtEl.textContent = `${p.index + 1} / ${p.count} 曲目  変換 ${p.pct}%`;
+      if (row) row.querySelector('.st').textContent = '変換 ' + p.pct + '%';
+    } else if (p.phase === 'done') {
+      if (row) {
+        row.classList.remove('doing');
+        row.classList.add('ok');
+        row.querySelector('.st').textContent = p.bad > 0 ? `完了（補填 ${p.bad}）` : '完了';
+      }
+    }
+  });
+
+  /** アルバム名・曲名をデータベースから取得する */
+  async function lookup() {
+    if (!disc) return null;
+    const prev = headEl.innerHTML;
+    headEl.innerHTML = '曲名を問い合わせています…<div class="sub">ディスク固有のIDのみ送ります</div>';
+
+    const r = await api.cdLookup({ tracks: disc.tracks, leadout: disc.leadout });
+    if (!r || !r.ok) {
+      meta = null;
+      headEl.innerHTML = prev
+        + `<div class="sub">${(r && r.error) || '取得できませんでした。'}</div>`;
+      return null;
+    }
+    meta = r;
+    headEl.innerHTML = `${r.album}`
+      + `<div class="sub">${r.artist}${r.date ? '　' + r.date : ''}　/　${disc.tracks.length} トラック</div>`;
+    render();
+    return r;
+  }
+
+  document.getElementById('all').onclick    = () => listEl.querySelectorAll('.row input:not(:disabled)').forEach((c) => c.checked = true);
+  document.getElementById('none').onclick   = () => listEl.querySelectorAll('.row input').forEach((c) => c.checked = false);
+  document.getElementById('lookup').onclick = () => lookup();
+  document.getElementById('close').onclick  = () => api.close();
+
+  goEl.onclick = async () => {
+    if (!disc) return;
+    const picked = [];
+    listEl.querySelectorAll('.row').forEach((r) => {
+      const cb = r.querySelector('input');
+      if (cb.checked && !cb.disabled) picked.push(Number(r.dataset.no));
+    });
+    if (!picked.length) { headEl.innerHTML = '取り込む曲を選んでください。'; return; }
+
+    const dir = await api.cdChooseDir();
+    if (!dir) return;
+
+    setBusy(true);
+    fillEl.style.width = '0%';
+    ptxtEl.textContent = '準備中…';
+    listEl.querySelectorAll('.st').forEach((s) => { if (s.textContent !== 'データトラック') s.textContent = ''; });
+    listEl.querySelectorAll('.row').forEach((r) => r.classList.remove('ok'));
+
+    const names = {};
+    if (meta) for (const t of meta.tracks) names[t.no] = { title: t.title, artist: t.artist };
+
+    const r = await api.cdRip({
+      drive: disc.drive,
+      tracks: picked,
+      dir,
+      format: document.getElementById('fmt').value,
+      album: meta ? meta.album : '',
+      artist: meta ? meta.artist : '',
+      date: meta ? meta.date : '',
+      names,
+    });
+    setBusy(false);
+
+    if (!r || !r.ok) {
+      headEl.innerHTML = (r && r.error) ? r.error : '取り込みに失敗しました。';
+      ptxtEl.textContent = '';
+      return;
+    }
+    fillEl.style.width = '100%';
+    ptxtEl.textContent = '完了';
+    headEl.innerHTML = `${r.files.length} 曲を ${r.format.toUpperCase()} で取り込みました`
+      + `<div class="sub">${r.dir}${r.bad > 0 ? `　※読めない箇所 ${r.bad} 個は無音で補填` : ''}</div>`;
+    if (r.files.length) api.cdReveal(r.files[0]);
+  };
+
+  window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !busy) api.close(); });
+
+  scan();
+</script>
+<script src="skin-apply.js"></script>
+</body>
+</html>

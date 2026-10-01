@@ -1,0 +1,4 @@
+body[data-theme="plugin"] fieldset{background:#c0c0c0;border:2px groove #fff}
+body[data-theme="plugin"] select{background:#fff;color:#000;border:2px inset #fff}
+body[data-theme="plugin"] legend{color:#000080}
+body[data-theme="plugin"] .title-bar{background:linear-gradient(90deg,#000080,#1084d0);color:#fff}

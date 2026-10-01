@@ -1,0 +1,87 @@
+/* ============================================================
+   ちょこっとplayer — 文字まわりの共通指定
+   ------------------------------------------------------------
+   見た目（配色・枠・質感）は各画面の元の指定をそのまま使う。
+   ここで変えるのは次の2点だけ。
+
+     1. 書体を メイリオ 系にする
+     2. 文字の大きさを元の 1.2 倍にする
+
+   窓の縦横（本体は Winamp と同じ 275x116）は変えない。
+   大きくなった文字が収まるよう、余白と行の高さだけ少し詰めている。
+
+   各画面の <style> より後に読み込むことで上書きする。
+   ============================================================ */
+
+html, body,
+button, input, select, textarea {
+  font-family: "Meiryo", "メイリオ", "Meiryo UI", "Hiragino Kaku Gothic ProN",
+               "Yu Gothic UI", "MS PGothic", sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 桁を揃えたい数字だけは等幅を残す */
+#time, .len, .no, .count {
+  font-family: Consolas, "Meiryo", "メイリオ", monospace !important;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================
+   本体（275x116 固定）  元の大きさ → 1.2倍
+   ============================================================ */
+.title-bar { flex: 0 0 18px !important; font-size: 14.5px !important; }  /* 10 → 12 */
+.title-bar .name { font-size: 15.5px !important; }                       /*  9 → 11 */
+.menu { font-size: 14.5px !important; padding: 0 5px !important; }       /* 10 → 12 */
+.tb { width: 15px !important; height: 14px !important; font-size: 15.5px !important; }
+
+.lcd {
+  flex: 0 0 40px !important;
+  margin: 3px 5px 2px !important;
+  padding: 2px 6px !important;
+}
+.lcd-top { gap: 6px !important; }
+#viz { width: 46px !important; height: 14px !important; }
+
+.track { font-size: 14.5px !important; line-height: 16px !important; }   /* 10 → 12 */
+#time  { font-size: 20.5px !important; line-height: 18px !important; }   /* 14 → 17 */
+#state { font-size: 15.5px !important; }                                 /*  9 → 11 */
+
+.seek { width: 265px !important; margin: 0 5px 2px !important; }
+.controls { padding: 0 5px 4px !important; gap: 3px !important; }
+.btn:has(.g) { width: 27px !important; height: 21px !important; }
+/* 「開く」が2行に折り返して崩れていたので、折り返しを禁止する */
+.btn-open {
+  height: 21px !important;
+  padding: 0 7px !important;
+  font-size: 14.5px !important;
+  white-space: nowrap !important;
+  width: auto !important;
+  flex: 0 0 auto !important;
+}
+.vol-wrap { gap: 4px !important; }
+.vol { width: 62px !important; }
+
+/* ============================================================
+   別窓（プレイリスト・CD取り込み・イコライザ・設定）
+   ============================================================ */
+.bar { flex: 0 0 20px !important; font-size: 14.5px !important; }        /*  9〜10 → 12 */
+.bar .name { font-size: 14.5px !important; }
+.bar .tb { width: 16px !important; height: 15px !important; font-size: 15.5px !important; }
+
+.head { font-size: 15.5px !important; min-height: 40px !important; }     /* 11 → 13 */
+.head .sub { font-size: 14.5px !important; }                             /* 10 → 12 */
+
+.row { font-size: 15.5px !important; line-height: 19px !important; }     /* 11 → 13 */
+.row .no, .row .len { font-size: 15.5px !important; }
+.row .st { font-size: 14.5px !important; }                               /* 10 → 12 */
+.row .kind { font-size: 15.5px !important; }                             /*  9 → 11 */
+.empty { font-size: 15.5px !important; }
+
+.prog { height: 15px !important; }
+.prog .txt { font-size: 15.5px !important; }                             /*  9 → 11 */
+
+.btn { height: 23px !important; padding: 0 10px !important; font-size: 14.5px !important; } /* 10 → 12 */
+.sel { height: 23px !important; font-size: 14.5px !important; }
+.count { font-size: 14.5px !important; }
+
+.list::-webkit-scrollbar { width: 11px !important; }

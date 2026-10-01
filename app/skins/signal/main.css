@@ -1,0 +1,105 @@
+/* シグナル・オレンジ — グラファイトの筐体に、琥珀色の明快なアクセント */
+body[data-theme="plugin"] {
+  --txt: #f3ebe0;
+  --sub: #a89a8c;
+  --line: rgba(255, 228, 200, .12);
+  --accent: #ff9c55;
+  --accent-glow: rgba(255, 156, 85, .42);
+  --gold: #f6d18a;
+  --hot: #f27059;
+  --ng: #ff6c62;
+  --radius: 3px;
+  --r-sm: 2px;
+  --win-bg: linear-gradient(160deg, #2f2b28 0%, #232120 46%, #1a1a1a 100%);
+  --win-border: #0f0e0d;
+  --card-bg: #121314;
+  --btn-bg: linear-gradient(180deg, #3a3633 0%, #2b2826 100%);
+  --btn-bg-hover: linear-gradient(180deg, #443d37 0%, #302b27 100%);
+  --play-bg: linear-gradient(180deg, #ffb46e 0%, #f08a45 100%);
+  --play-ink: #2a1a0f;
+  --track-bg: rgba(255, 236, 214, .1);
+  --viz-grad: #b8572e, #f08a45, #ffc883;
+  --viz-peak: #ffe4bf;
+  --viz-idle: rgba(255, 190, 130, .2);
+  --font: "Zen Kaku Gothic New", "Yu Gothic UI", sans-serif;
+  --mono: "Bebas Neue", "Space Mono", monospace;
+  --time-font: "Bebas Neue", "Arial Narrow", sans-serif;
+}
+/* 筐体：上辺にだけ細い光、外側は締まった影 */
+body[data-theme="plugin"] .player {
+  border-color: #0f0e0d;
+  box-shadow: inset 0 1px 0 rgba(255,240,222,.10), inset 0 0 0 1px rgba(255,240,222,.03), 0 6px 18px rgba(0,0,0,.45);
+}
+body[data-theme="plugin"] .texture { opacity: 0 !important; }
+
+/* タイトルバー：飾らず、下に琥珀のにじむ線 */
+body[data-theme="plugin"] .titlebar {
+  background: linear-gradient(180deg, #34302c, #262422);
+  border-bottom: 0;
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,.5);
+}
+body[data-theme="plugin"] .titlebar::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,156,85,.75) 30%, rgba(255,156,85,.75) 70%, transparent 100%);
+}
+body[data-theme="plugin"] .brand { color: #c9b5a0; letter-spacing: .07em; font-weight: 700; }
+body[data-theme="plugin"] .brand svg { color: var(--accent); }
+body[data-theme="plugin"] .menu {
+  color: #cdbba8; background: rgba(255,240,222,.04); border: 1px solid rgba(255,228,200,.12); border-radius: 2px;
+  letter-spacing: .08em;
+}
+body[data-theme="plugin"] .menu:hover { color: #fff3e4; border-color: rgba(255,156,85,.6); background: rgba(255,156,85,.08); }
+body[data-theme="plugin"] .wbtn { color: #bfae9c; background: transparent; border: 0; border-radius: 2px; }
+body[data-theme="plugin"] .wbtn:hover { color: #fff3e4; background: rgba(255,240,222,.09); }
+body[data-theme="plugin"] .wbtn.x:hover { color: #fff; background: #d9473b; }
+
+/* 表示窓：一段沈んだ黒いガラス */
+body[data-theme="plugin"] .display {
+  border: 1px solid rgba(0,0,0,.55); border-radius: 3px;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,.55), 0 1px 0 rgba(255,240,222,.06);
+}
+body[data-theme="plugin"] .display.lcd { background: radial-gradient(120% 90% at 20% 0%, #1d1b19 0%, #111213 70%); }
+body[data-theme="plugin"] .display.info { background: linear-gradient(180deg, #1b1a19 0%, #141515 100%); }
+body[data-theme="plugin"] #time { color: #ffae6a; font-weight: 400; letter-spacing: .03em; text-shadow: 0 0 8px rgba(255,140,60,.35); }
+body[data-theme="plugin"] #dur { color: #85786b; letter-spacing: .04em; }
+body[data-theme="plugin"] .track { color: #fbf3e8; font-weight: 700; }
+body[data-theme="plugin"] .format-row { color: #a89a8c; }
+body[data-theme="plugin"] #fmt, body[data-theme="plugin"] #fmt.hr { color: #ffae6a; letter-spacing: .05em; }
+body[data-theme="plugin"] #fmt.ng { color: var(--ng); }
+body[data-theme="plugin"] #state { color: #93857a; }
+body[data-theme="plugin"] .badge { color: #2a1a0f; background: linear-gradient(180deg, #ffdca0, #f2c477); border-radius: 2px; font-weight: 400; }
+
+/* つまみ：細い溝と、小さく確かな丸 */
+body[data-theme="plugin"] input[type=range]::-webkit-slider-runnable-track {
+  height: 3px; border-radius: 2px; border: 0;
+  background: linear-gradient(90deg, #d9733a 0%, #ffa863 var(--p, 0%), rgba(255,236,214,.1) var(--p, 0%), rgba(255,236,214,.1) 100%);
+  box-shadow: inset 0 1px 1px rgba(0,0,0,.5);
+}
+body[data-theme="plugin"] input[type=range]::-webkit-slider-thumb {
+  width: 9px; height: 9px; margin-top: -3px; border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, #fff7ec 0%, #ffe0bb 60%, #f2c08a 100%);
+  box-shadow: 0 0 0 1px rgba(0,0,0,.55), 0 1px 2px rgba(0,0,0,.5);
+  transition: box-shadow .12s, transform .12s;
+}
+body[data-theme="plugin"] input[type=range]:hover::-webkit-slider-thumb { box-shadow: 0 0 0 1px rgba(0,0,0,.55), 0 0 0 3px rgba(255,156,85,.22), 0 1px 2px rgba(0,0,0,.5); }
+
+/* ボタン：つや消しの黒鉄。上辺だけ光らせる */
+body[data-theme="plugin"] .cbtn, body[data-theme="plugin"] .sbtn {
+  color: #e6d6c4; border: 1px solid rgba(0,0,0,.6); border-radius: 3px;
+  box-shadow: inset 0 1px 0 rgba(255,240,222,.10), 0 1px 1px rgba(0,0,0,.35);
+}
+body[data-theme="plugin"] .cbtn:hover, body[data-theme="plugin"] .sbtn:hover { color: #ffb070; }
+body[data-theme="plugin"] .cbtn:active, body[data-theme="plugin"] .sbtn:active { box-shadow: inset 0 1px 2px rgba(0,0,0,.55); }
+body[data-theme="plugin"] .cbtn.play {
+  color: #2a1a0f; border-color: #a9551f;
+  box-shadow: inset 0 1px 0 rgba(255,250,240,.45), 0 1px 1px rgba(0,0,0,.35);
+}
+body[data-theme="plugin"] .cbtn.play:hover { color: #2a1a0f; filter: brightness(1.06); }
+body[data-theme="plugin"][data-ps="playing"] .cbtn.play {
+  box-shadow: inset 0 1px 0 rgba(255,250,240,.45), 0 0 0 1px rgba(255,156,85,.25), 0 0 10px rgba(255,140,60,.35);
+}
+body[data-theme="plugin"][data-ps="paused"] #btnPause { color: #ffae6a; }
+body[data-theme="plugin"] .sbtn { color: #bfae9c; }
+body[data-theme="plugin"] .sbtn.on { color: #2a1a0f; background: linear-gradient(180deg, #ffc283, #ef9a55); border-color: #a9551f; box-shadow: inset 0 1px 0 rgba(255,250,240,.4); }
+body[data-theme="plugin"] #btnEq, body[data-theme="plugin"] #btnList { font-family: var(--mono); font-weight: 400; font-size: 10px !important; letter-spacing: .04em !important; }
+body[data-theme="plugin"] #volNum { color: #a89a8c; font-size: 10.5px !important; letter-spacing: .04em; }

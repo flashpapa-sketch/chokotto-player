@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<script src="web-api.js"></script>
+<title>ちょこっとplayer</title>
+<link rel="stylesheet" href="fonts.css">
+<style>
+  /* =========================================================
+     内蔵スキン（v1.1.1）
+     寸法・部品の位置は Winamp 2.x のメイン窓（275x116）と同じ。
+       タイトルバー 0,0 275x14 / 時間表示 9,19 / スペクトラム 24,43
+       曲名 111,24 / 音量 107,57 / EQ・PL 219,58 / シーク 16,72
+       操作ボタン 16,88 (23x18) / 取り出し 136,89 / シャッフル 164,89 / リピート 210,89
+     書体はアプリに同梱（fonts.css）。ネットからは読み込まない。
+     ========================================================= */
+  :root, body[data-theme="glass"] {
+    --txt: #e8eef7; --sub: #7b8ba1; --line: rgba(255,255,255,.12);
+    --glass: rgba(255,255,255,.055);
+    --accent: #3ee7f2; --accent-glow: rgba(62,231,242,.55);
+    --hot: #ff5fa2; --gold: #ffc861; --ng: #ff7a6b;
+    --radius: 8px; --r-sm: 5px;
+    --win-bg: radial-gradient(120% 90% at 50% -20%, #1b2a3d 0%, transparent 60%), linear-gradient(180deg, #0e141d 0%, #0a0e14 100%);
+    --win-border: rgba(120,200,255,.18);
+    --card-bg: rgba(0,0,0,.35);
+    --btn-bg: rgba(255,255,255,.07); --btn-bg-hover: rgba(62,231,242,.18);
+    --play-bg: linear-gradient(180deg, #5ff0f8, #1fb8c6); --play-ink: #04161a;
+    --track-bg: rgba(255,255,255,.12);
+    --viz-a: #1b6b7a; --viz-b: #3ee7f2; --viz-idle: rgba(62,231,242,.14);
+    --font: "Zen Kaku Gothic New", "Yu Gothic UI", "Meiryo UI", "Meiryo", sans-serif;
+    --mono: "Space Mono", "Consolas", monospace;
+    --time-font: "Orbitron", "Space Mono", monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 275px; height: 116px;
+    overflow: hidden;
+    user-select: none; cursor: default;
+    background: #11100f;
+    font-family: var(--font);
+    -webkit-font-smoothing: antialiased;
+    color: var(--txt);
+  }
+  #wszSkin { display: none; }
+  body.skinned #wszSkin { display: block; }
+  body.skinned .player { display: none; }
+
+  .player {
+    position: relative;
+    width: 275px; height: 116px;
+    background: var(--win-bg);
+    border: 1px solid var(--win-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .player > * { position: absolute; }
+
+  /* ---- タイトルバー 0,0 275x14 ---- */
+  .titlebar {
+    -webkit-app-region: drag;
+    left: 0; top: 0; width: 100%; height: 14px;
+  }
+  .brand {
+    position: absolute; left: 60px; right: 60px; top: 0; height: 14px;
+    display: flex; align-items: center; justify-content: center; gap: 3px;
+    font-size: 8.5px; font-weight: 700; letter-spacing: .08em;
+    color: var(--sub);
+    white-space: nowrap; overflow: hidden;
+  }
+  .brand svg { flex: none; color: var(--accent); }
+  .menu {
+    -webkit-app-region: no-drag;
+    position: absolute; left: 4px; top: 2px; height: 10px;
+    display: flex; align-items: center;
+    padding: 0 4px;
+    font-size: 7.5px; font-weight: 700; line-height: 1;
+    color: var(--sub);
+    border: 1px solid var(--line); border-radius: 2px;
+    cursor: pointer;
+  }
+  .menu:hover { color: var(--accent); border-color: var(--accent); }
+  .wbtn {
+    -webkit-app-region: no-drag;
+    position: absolute; top: 3px; width: 9px; height: 9px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0; border: 0; border-radius: 2px;
+    background: var(--btn-bg); color: var(--sub);
+    cursor: pointer;
+  }
+  .wbtn svg { width: 7px; height: 7px; display: block; pointer-events: none; }
+  #btnOptions { left: 244px; } #btnMin { left: 254px; } #btnClose { left: 264px; }
+  .wbtn:hover { color: var(--txt); background: var(--btn-bg-hover); }
+  .wbtn.x:hover { color: #fff; background: #d9435a; }
+
+  /* ---- 表示窓（左: 時間とスペクトラム / 右: 曲名と形式） ---- */
+  .display {
+    background: var(--card-bg);
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    overflow: hidden;
+  }
+  .display.lcd  { left: 9px;   top: 19px; width: 96px;  height: 43px; }
+  .display.info { left: 108px; top: 19px; width: 158px; height: 33px; }
+
+  #time {
+    position: absolute; left: 6px; top: 2px;
+    font-family: var(--time-font);
+    font-size: 15px; font-weight: 700; line-height: 18px;
+    letter-spacing: .02em;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+  #dur {
+    position: absolute; right: 5px; top: 6px;
+    font-family: var(--mono); font-size: 7.5px; line-height: 9px;
+    color: var(--sub);
+  }
+  #dur::before { content: "/ "; }
+  #viz {
+    position: absolute; left: 5px; top: 23px;
+    width: 84px; height: 16px; display: block;
+  }
+
+  .track {
+    position: absolute; left: 5px; right: 5px; top: 3px; height: 14px;
+    font-size: 10px; font-weight: 700; line-height: 14px;
+    color: var(--txt);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .format-row {
+    position: absolute; left: 5px; right: 5px; top: 19px; height: 10px;
+    display: flex; align-items: center; gap: 4px;
+    font-family: var(--mono); font-size: 7.5px; line-height: 10px;
+  }
+  .badge {
+    display: none;
+    padding: 0 3px; border-radius: 2px;
+    font-size: 6.5px; font-weight: 700; letter-spacing: .06em; line-height: 9px;
+    color: #1a1000; background: var(--gold);
+  }
+  .badge.on { display: inline-block; }
+  #fmt { color: var(--accent); white-space: nowrap; }
+  #fmt.hr { color: var(--gold); }
+  #fmt.ng { color: var(--ng); }
+  #state { margin-left: auto; font-family: var(--font); font-size: 7.5px; color: var(--sub); white-space: nowrap; }
+
+  /* ---- スライダー（音量 107,57 / シーク 16,72） ---- */
+  input[type=range] { -webkit-appearance: none; background: transparent; cursor: pointer; }
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 4px; border-radius: 2px;
+    background: linear-gradient(90deg, var(--accent) 0%, var(--accent) var(--p, 0%), var(--track-bg) var(--p, 0%), var(--track-bg) 100%);
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 8px; height: 8px; margin-top: -2px; border-radius: 50%;
+    background: #fff; box-shadow: 0 0 0 1.5px var(--accent), 0 0 6px var(--accent-glow);
+  }
+  .vol  { left: 107px; top: 56px; width: 68px;  height: 13px; }
+  .seek { left: 16px;  top: 72px; width: 248px; height: 10px; }
+  #volNum {
+    left: 177px; top: 56px; width: 38px; height: 13px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 7.5px; color: var(--sub);
+  }
+
+  /* ---- ボタン ---- */
+  .cbtn, .sbtn {
+    display: flex; align-items: center; justify-content: center;
+    padding: 0;
+    border: 1px solid var(--line); border-radius: 3px;
+    background: var(--btn-bg); color: var(--txt);
+    font-family: var(--font); font-size: 7px; font-weight: 700; letter-spacing: .04em; line-height: 1;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .cbtn:hover, .sbtn:hover { background: var(--btn-bg-hover); color: var(--accent); }
+  .cbtn:active, .sbtn:active { transform: translateY(1px); }
+  .cbtn svg, .sbtn svg, .wbtn svg { display: block; pointer-events: none; }
+  .cbtn svg { width: 9px; height: 9px; }
+  .sbtn svg { width: 9px; height: 9px; }
+
+  .controls { left: 16px; top: 88px; width: 114px; height: 18px; display: flex; }
+  .controls .cbtn { width: 23px; height: 18px; flex: none; }
+  .controls .cbtn:last-child { width: 22px; }
+  .controls .cbtn + .cbtn { margin-left: 0; }
+  .cbtn.play { background: var(--play-bg); color: var(--play-ink); border-color: transparent; }
+
+  #btnOpen { left: 136px; top: 89px; width: 22px; height: 16px; }
+  #btnShuf { left: 164px; top: 89px; width: 46px; height: 15px; }
+  #btnRep  { left: 210px; top: 89px; width: 28px; height: 15px; }
+  #btnEq   { left: 219px; top: 58px; width: 23px; height: 12px; font-size: 6.5px; }
+  #btnList { left: 242px; top: 58px; width: 23px; height: 12px; font-size: 6.5px; }
+  .sbtn.on { color: var(--accent); border-color: var(--accent); box-shadow: inset 0 0 4px var(--accent-glow); }
+
+  .logo {
+    left: 242px; top: 89px; width: 24px; height: 16px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--accent);
+  }
+  .logo svg { width: 11px; height: 11px; }
+
+  .deco, .strip, .texture { display: none; }
+  /* 起動直後、保存された見た目を読み込むまで一瞬だけ隠す（別の見た目がちらつかないように） */
+  body.booting .player { visibility: hidden; }
+
+  /* ================= ヴィンテージロック（標準） ================= */
+  body[data-theme="vintage"] {
+    --black: #0b0a09; --red: #d81f2a; --red-d: #8f1119; --yellow: #f2c018; --cream: #f4ecdc; --tan: #c9a15a;
+    --txt: #f4ecdc; --sub: #c9a15a; --line: rgba(244,236,220,.26);
+    --accent: #f2c018; --accent-glow: rgba(242,192,24,.5);
+    --gold: #f2c018; --hot: #d81f2a; --ng: #ff6b5b;
+    --radius: 0; --r-sm: 0;
+    --win-bg: #0b0a09; --win-border: #d81f2a;
+    --card-bg: #000;
+    --btn-bg: linear-gradient(180deg, #2a221c, #0d0b0a); --btn-bg-hover: linear-gradient(180deg, #3a2e25, #15110e);
+    --play-bg: linear-gradient(180deg, #ec3a45, #9c121a); --play-ink: #fff;
+    --track-bg: #000;
+    --viz-grad: #7a0f16, #d81f2a, #f08a10, #f2c018;
+    --viz-idle: rgba(242,192,24,.16);
+    --font: "Zen Kaku Gothic New", "Yu Gothic UI", "Meiryo", sans-serif;
+    --mono: "Anton", "Arial Black", Impact, sans-serif;
+    --time-font: "Anton", Impact, sans-serif;
+  }
+  body[data-theme="vintage"] .player { border-width: 2px; }
+  body[data-theme="vintage"] .titlebar { background: linear-gradient(180deg, #241c17, #0d0b0a); border-bottom: 1px solid var(--red); }
+  body[data-theme="vintage"] .brand { color: #8b7e6e; letter-spacing: .12em; }
+  body[data-theme="vintage"] .brand svg { color: var(--red); }
+  body[data-theme="vintage"] .menu { color: var(--yellow); background: #000; border-color: rgba(242,192,24,.45); border-radius: 0; }
+  body[data-theme="vintage"] .menu:hover { background: var(--red); color: #fff; border-color: var(--red); }
+  body[data-theme="vintage"] .wbtn { background: #000; color: var(--cream); border: 1px solid rgba(244,236,220,.3); border-radius: 0; }
+  body[data-theme="vintage"] .strip.leopard {
+    display: block; left: 0; top: 14px; width: 100%; height: 3px;
+    background-color: #d9a441;
+    background-image:
+      radial-gradient(ellipse 2.2px 1.4px at 9px 1.5px, #2b1a0e 90%, transparent 95%),
+      radial-gradient(ellipse 2.2px 1.4px at 27px 2px, #2b1a0e 90%, transparent 95%),
+      radial-gradient(ellipse 2.2px 1.4px at 45px 1px, #2b1a0e 90%, transparent 95%),
+      radial-gradient(circle 0.9px at 18px 2px, #2b1a0e 90%, transparent 95%),
+      radial-gradient(circle 0.9px at 36px 1px, #2b1a0e 90%, transparent 95%);
+    background-size: 54px 3px;
+  }
+  body[data-theme="vintage"] .display { border: 1px solid rgba(242,192,24,.5); }
+  body[data-theme="vintage"] .display.info { background: var(--cream); border: 1px solid #000; box-shadow: 2px 2px 0 var(--red); }
+  body[data-theme="vintage"] .track { color: #0b0a09; font-weight: 900; }
+  body[data-theme="vintage"] .format-row { color: #0b0a09; }
+  body[data-theme="vintage"] #fmt, body[data-theme="vintage"] #fmt.hr { color: var(--red-d); }
+  body[data-theme="vintage"] #state { color: #6b5d4a; font-weight: 700; }
+  body[data-theme="vintage"] .badge { color: #000; background: var(--yellow); border: 1px solid #000; border-radius: 0; transform: rotate(-3deg); }
+  body[data-theme="vintage"] #time { color: var(--yellow); font-weight: 400; font-size: 16px; letter-spacing: .06em; }
+  body[data-theme="vintage"] #viz { background: repeating-conic-gradient(#191512 0% 25%, #080706 0% 50%) 0 0 / 6px 6px; }
+  body[data-theme="vintage"] input[type=range]::-webkit-slider-runnable-track { height: 5px; border-radius: 0; border: 1px solid rgba(244,236,220,.25); background: linear-gradient(90deg, var(--red) 0%, var(--red-d) var(--p, 0%), #000 var(--p, 0%), #000 100%); }
+  body[data-theme="vintage"] input[type=range]::-webkit-slider-thumb { width: 7px; height: 7px; margin-top: -2px; border-radius: 0; background: var(--yellow); border: 1px solid #000; box-shadow: none; transform: rotate(45deg); }
+  body[data-theme="vintage"] .vol::-webkit-slider-runnable-track { background: linear-gradient(90deg, var(--yellow) 0%, #a97e08 var(--p, 50%), #000 var(--p, 50%), #000 100%); }
+  body[data-theme="vintage"] .cbtn, body[data-theme="vintage"] .sbtn { border-radius: 1px; border-color: rgba(244,236,220,.25); box-shadow: 0 2px 0 #000; }
+  body[data-theme="vintage"] .cbtn.play { border-color: #000; box-shadow: 0 2px 0 #000, 0 0 8px rgba(216,31,42,.55); }
+  body[data-theme="vintage"] .cbtn:hover, body[data-theme="vintage"] .sbtn:hover { color: var(--yellow); border-color: var(--yellow); }
+  body[data-theme="vintage"] .sbtn { background: #000; color: var(--cream); }
+  body[data-theme="vintage"] .sbtn.on { color: #000; background: var(--yellow); border-color: #000; box-shadow: none; }
+  body[data-theme="vintage"] #volNum { color: var(--tan); }
+  body[data-theme="vintage"] .logo { color: var(--red); }
+  body[data-theme="vintage"] .strip.checker {
+    display: block; left: 0; bottom: 0; width: 100%; height: 3px;
+    background-image: repeating-conic-gradient(var(--red) 0% 25%, #000 0% 50%);
+    background-size: 6px 6px;
+  }
+
+  /* ================= ロック（黒・赤・黄） ================= */
+  body[data-theme="rock"] {
+    --black: #11100f; --red: #d71920; --red-dark: #8e1118; --yellow: #f5c400; --cream: #f5e7b2; --white: #fff4ce; --navy: #171d36;
+    --txt: #11100f; --sub: #11100f; --line: #11100f;
+    --accent: #d71920; --accent-glow: rgba(0,0,0,0); --gold: #d71920; --ng: #d71920;
+    --radius: 0; --r-sm: 0;
+    --win-bg: linear-gradient(135deg, transparent 0 48%, rgba(255,255,255,.08) 49% 51%, transparent 52%), #f5e7b2;
+    --win-border: #11100f;
+    --card-bg: #171d36;
+    --btn-bg: #f5c400; --btn-bg-hover: #fff4ce;
+    --play-bg: #d71920; --play-ink: #fff4ce;
+    --track-bg: #fff4ce;
+    --viz-a: #d71920; --viz-m: #f5c400; --viz-b: #fff4ce; --viz-idle: rgba(245,196,0,.25);
+    --font: "Zen Kaku Gothic New", "Yu Gothic UI", "Meiryo", sans-serif;
+    --mono: "Anton", Impact, sans-serif;
+    --time-font: "Anton", Impact, sans-serif;
+  }
+  body[data-theme="rock"] .player { border-width: 2px; }
+  body[data-theme="rock"] .texture {
+    display: block; inset: 0; pointer-events: none; opacity: .2; mix-blend-mode: multiply;
+    background-image: radial-gradient(#000 0.5px, transparent 0.6px), radial-gradient(#000 0.4px, transparent 0.5px);
+    background-position: 0 0, 3px 3px; background-size: 5px 5px, 7px 7px;
+  }
+  body[data-theme="rock"] .titlebar { background: var(--black); }
+  body[data-theme="rock"] .brand { color: var(--yellow); font-family: "Dela Gothic One", var(--font); font-weight: 400; letter-spacing: .04em; }
+  body[data-theme="rock"] .brand svg { color: var(--red); }
+  body[data-theme="rock"] .menu { color: var(--white); background: var(--red); border-color: var(--yellow); border-radius: 0; }
+  body[data-theme="rock"] .wbtn { background: var(--yellow); color: var(--black); border-radius: 0; }
+  body[data-theme="rock"] .wbtn.x { background: var(--red); color: var(--white); }
+  body[data-theme="rock"] .display { border: 1px solid var(--black); box-shadow: inset 0 0 0 1px var(--yellow); }
+  body[data-theme="rock"] .display.info {
+    background: repeating-linear-gradient(-45deg, var(--red) 0, var(--red) 5px, var(--red-dark) 5px, var(--red-dark) 7px);
+    box-shadow: 2px 2px 0 var(--black); transform: rotate(-.6deg);
+  }
+  body[data-theme="rock"] .track { color: var(--white); font-family: "Dela Gothic One", var(--font); font-weight: 400; text-shadow: 1px 1px 0 var(--black); }
+  body[data-theme="rock"] .format-row { color: var(--white); }
+  body[data-theme="rock"] #fmt, body[data-theme="rock"] #fmt.hr { color: var(--black); background: var(--white); padding: 0 3px; border: 1px solid var(--black); }
+  body[data-theme="rock"] .badge { color: var(--black); background: var(--yellow); border: 1px solid var(--black); border-radius: 0; }
+  body[data-theme="rock"] #state { color: var(--yellow); font-weight: 700; }
+  body[data-theme="rock"] #time { color: var(--yellow); font-weight: 400; font-size: 16px; letter-spacing: .06em; }
+  body[data-theme="rock"] #dur { color: #b9bfd8; }
+  body[data-theme="rock"] input[type=range]::-webkit-slider-runnable-track { height: 5px; border-radius: 0; border: 1px solid var(--black); background: linear-gradient(90deg, var(--red) 0%, var(--red) var(--p, 0%), var(--white) var(--p, 0%), var(--white) 100%); }
+  body[data-theme="rock"] input[type=range]::-webkit-slider-thumb { width: 7px; height: 10px; margin-top: -3.5px; border-radius: 0; background: var(--yellow); border: 1.5px solid var(--black); box-shadow: none; }
+  body[data-theme="rock"] .cbtn, body[data-theme="rock"] .sbtn { color: var(--black); border: 1.5px solid var(--black); border-radius: 0; box-shadow: 1px 1px 0 var(--black); }
+  body[data-theme="rock"] .cbtn.play { border-radius: 50%; border: 1.5px solid var(--black); }
+  body[data-theme="rock"] .cbtn:hover, body[data-theme="rock"] .sbtn:hover { color: var(--black); }
+  body[data-theme="rock"] .sbtn { background: var(--white); }
+  body[data-theme="rock"] .sbtn.on { background: var(--red); color: var(--white); box-shadow: 1px 1px 0 var(--black); }
+  body[data-theme="rock"] #volNum { color: var(--black); font-size: 8px; }
+  body[data-theme="rock"] .logo { color: var(--red); }
+  body[data-theme="rock"] .deco.checker {
+    display: block; left: 252px; top: 48px; width: 12px; height: 7px; pointer-events: none;
+    border: 1px solid var(--black);
+    background: conic-gradient(var(--black) 25%, var(--white) 0 50%, var(--black) 0 75%, var(--white) 0) 0 0 / 4px 4px;
+    transform: rotate(6deg);
+  }
+
+  /* ================= ホワイト ================= */
+  body[data-theme="white"] {
+    --txt: #16181d; --sub: #8a8f99; --line: rgba(0,0,0,.09);
+    --accent: #16181d; --accent-glow: rgba(0,0,0,0); --gold: #0a84ff; --hot: #0a84ff; --ng: #d93a3a;
+    --radius: 10px; --r-sm: 6px;
+    --win-bg: linear-gradient(180deg, #fbfbfc 0%, #eef0f3 100%); --win-border: rgba(0,0,0,.12);
+    --card-bg: #ffffff;
+    --btn-bg: #ffffff; --btn-bg-hover: #eef0f4;
+    --play-bg: #16181d; --play-ink: #fff;
+    --track-bg: #dfe1e6;
+    --viz-a: #c9ccd3; --viz-b: #16181d; --viz-idle: #e6e8ec;
+    --font: "Zen Kaku Gothic New", "Yu Gothic UI", "Segoe UI", sans-serif;
+    --mono: "Space Mono", "Consolas", monospace;
+    --time-font: "Zen Kaku Gothic New", "Segoe UI", sans-serif;
+  }
+  body[data-theme="white"] .display { box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+  body[data-theme="white"] #time { font-weight: 900; font-size: 16px; }
+  body[data-theme="white"] .track { font-weight: 900; }
+  body[data-theme="white"] #fmt, body[data-theme="white"] #fmt.hr { color: #0a84ff; font-weight: 700; }
+  body[data-theme="white"] .badge { color: #fff; background: #0a84ff; }
+  body[data-theme="white"] .brand svg, body[data-theme="white"] .logo { color: #16181d; }
+  body[data-theme="white"] input[type=range]::-webkit-slider-thumb { box-shadow: 0 0 0 1px rgba(0,0,0,.2), 0 1px 2px rgba(0,0,0,.25); }
+  body[data-theme="white"] .cbtn:hover, body[data-theme="white"] .sbtn:hover { color: #16181d; }
+  body[data-theme="white"] .sbtn.on { color: #fff; background: #16181d; box-shadow: none; }
+
+  /* ================= ネオングラス（上の既定値そのまま＋少し） ================= */
+  body[data-theme="glass"] .brand { font-family: "Orbitron", var(--font); letter-spacing: .14em; }
+  body[data-theme="glass"] #time { text-shadow: 0 0 6px var(--accent-glow); }
+  body[data-theme="glass"] .badge { box-shadow: 0 0 6px rgba(255,200,97,.5); }
+
+  /* ================= レトロフューチャー ================= */
+  body[data-theme="retro"] {
+    --txt: #c8f0f0; --sub: #4f8585; --line: rgba(0,255,200,.3);
+    --accent: #00ffc8; --accent-glow: rgba(0,255,200,.55); --hot: #ff006e; --gold: #ff006e; --ng: #ff5a5a;
+    --radius: 2px; --r-sm: 0;
+    --win-bg: linear-gradient(rgba(0,255,200,.07) 1px, transparent 1px) 0 0 / 6px 6px, linear-gradient(90deg, rgba(0,255,200,.07) 1px, transparent 1px) 0 0 / 6px 6px, #071414;
+    --win-border: #00ffc8;
+    --card-bg: #000;
+    --btn-bg: transparent; --btn-bg-hover: rgba(0,255,200,.12);
+    --play-bg: transparent; --play-ink: #00ffc8;
+    --track-bg: #1d3a3a;
+    --viz-a: #00ffc8; --viz-b: #ffffff; --viz-idle: rgba(0,255,200,.15);
+    --font: "DotGothic16", "Zen Kaku Gothic New", monospace;
+    --mono: "Space Mono", "Consolas", monospace;
+    --time-font: "Orbitron", monospace;
+  }
+  body[data-theme="retro"] .brand { color: var(--accent); font-family: "Orbitron", var(--font); letter-spacing: .2em; }
+  body[data-theme="retro"] .track { color: var(--accent); font-weight: 400; text-shadow: 0 0 6px var(--accent-glow); }
+  body[data-theme="retro"] #time { text-shadow: 0 0 8px var(--accent-glow); }
+  body[data-theme="retro"] .badge { color: #000; background: var(--hot); }
+  body[data-theme="retro"] .cbtn.play { border-color: var(--accent); }
+  body[data-theme="retro"] input[type=range]::-webkit-slider-runnable-track { border-radius: 0; }
+  body[data-theme="retro"] input[type=range]::-webkit-slider-thumb { border-radius: 0; background: var(--accent); }
+
+  /* 追加スキン（プラグイン）用の既定値。プラグイン側で上書きできる */
+  body[data-theme="plugin"] { --time-font: var(--mono); }
+
+  /* =========================================================
+     見やすさ優先の配置（v1.1.1）
+     窓は 275x116 のまま、文字とボタンを約 1.5 倍に。
+     外側の余白 6px・すき間 4px の格子にそろえる。
+     すべての見た目（追加スキン含む）に効くよう、寸法だけ !important で固定する。
+     ========================================================= */
+  body .player .titlebar { left: 0 !important; top: 0 !important; width: 100% !important; height: 18px !important; }
+  body .player .brand { left: 64px !important; right: 64px !important; height: 18px !important; font-size: 10.5px !important; gap: 4px !important; }
+  body .player .brand svg { width: 9px; height: 9px; }
+  body .player .menu { left: 6px !important; top: 3px !important; height: 12px !important; font-size: 9.5px !important; line-height: 12px !important; padding: 0 5px !important; }
+  body .player .wbtn { top: 3px !important; width: 14px !important; height: 12px !important; }
+  body .player .wbtn svg { width: 8px !important; height: 8px !important; }
+  body .player #btnOptions { left: 223px !important; } body .player #btnMin { left: 239px !important; } body .player #btnClose { left: 255px !important; }
+
+  body .player .display.lcd  { left: 6px !important;   top: 22px !important; width: 92px !important;  height: 36px !important; }
+  body .player .display.info { left: 102px !important; top: 22px !important; width: 167px !important; height: 36px !important; }
+  body .player #time { left: 5px !important; top: 1px !important; font-size: 22px !important; line-height: 22px !important; font-variant-numeric: tabular-nums; }
+  body .player #dur  { right: 5px !important; top: 10px !important; font-size: 9px !important; line-height: 11px !important; font-variant-numeric: tabular-nums; }
+  body .player #viz  { left: 5px !important; top: 25px !important; width: 82px !important; height: 7px !important; background: none !important; }
+  body .player .track { left: 6px !important; right: 6px !important; top: 3px !important; height: 17px !important; font-size: 13.5px !important; line-height: 17px !important; letter-spacing: .01em; }
+  body .player .format-row { left: 6px !important; right: 6px !important; top: 21px !important; height: 11px !important; font-size: 10px !important; line-height: 11px !important; gap: 5px !important; align-items: center !important; }
+  body .player .badge { font-size: 8.5px !important; line-height: 11px !important; height: 11px !important; padding: 0 3px !important; letter-spacing: .04em; }
+  body .player .badge.on { flex: none !important; width: auto !important; min-width: max-content; white-space: nowrap; overflow: visible !important; }
+  body .player #fmt { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  body .player #state { flex: none; }
+  body .player #state { font-size: 9px !important; letter-spacing: .06em; display: inline-flex !important; align-items: center; gap: 3px; opacity: .9; }
+  body .player #state::before { content: ""; width: 4px; height: 4px; border-radius: 50%; background: currentColor; opacity: .55; flex: none; }
+  body[data-ps="playing"] .player #state::before { background: var(--accent); opacity: 1; box-shadow: 0 0 4px var(--accent-glow); animation: ckPulse 1.6s ease-in-out infinite; }
+  @keyframes ckPulse { 50% { opacity: .35; } }
+
+  body .player .seek { left: 6px !important; top: 62px !important; width: 263px !important; height: 11px !important; }
+
+  body .player .controls { left: 6px !important; top: 77px !important; width: 168px !important; height: 33px !important; gap: 2px !important; }
+  body .player .controls .cbtn { width: 32px !important; height: 33px !important; margin: 0 !important; }
+  body .player .controls .cbtn:last-child { width: 32px !important; }
+  body .player .cbtn svg { width: 13px !important; height: 13px !important; }
+
+  body .player .vol { left: 180px !important; top: 78px !important; width: 56px !important; height: 12px !important; }
+  body .player #volNum { left: 238px !important; top: 78px !important; width: 31px !important; height: 12px !important; font-size: 9.5px !important; line-height: 12px !important; text-align: right !important; justify-content: flex-end !important; font-variant-numeric: tabular-nums; }
+  body .player #btnOpen { left: 180px !important; top: 94px !important; width: 17px !important; height: 16px !important; }
+  body .player #btnShuf { left: 198px !important; top: 94px !important; width: 17px !important; height: 16px !important; }
+  body .player #btnRep  { left: 216px !important; top: 94px !important; width: 17px !important; height: 16px !important; }
+  body .player #btnEq   { left: 234px !important; top: 94px !important; width: 17px !important; height: 16px !important; font-size: 8.5px !important; letter-spacing: 0 !important; }
+  body .player #btnList { left: 252px !important; top: 94px !important; width: 17px !important; height: 16px !important; font-size: 8.5px !important; letter-spacing: 0 !important; }
+  body .player .sbtn svg { width: 10px !important; height: 10px !important; }
+  body .player #btnShuf, body .player #btnRep { font-size: 0 !important; }
+  body .player .logo, body .player .deco { display: none !important; }
+  body .player .strip.leopard { top: 18px !important; height: 2px !important; }
+
+  /* 表記は全スキン共通で chokotto-player / File のまま（大文字にしない） */
+  body .player .brand .name, body .player .menu { text-transform: none !important; }
+
+  /* 触ったときの手ごたえ */
+  body .player .cbtn, body .player .sbtn, body .player .wbtn, body .player .menu { transition: background-color .12s, color .12s, border-color .12s, box-shadow .12s, filter .12s, transform .06s; }
+  body .player .cbtn:active, body .player .sbtn:active, body .player .wbtn:active { transform: translateY(1px) !important; filter: brightness(.92); }
+  body .player button:focus-visible { outline: 1px solid var(--accent) !important; outline-offset: 1px; }
+  body .player input[type=range]:focus-visible { outline: none; }
+</style>
+</head>
+<body data-theme="vintage" class="booting">
+<div class="player">
+  <div class="texture"></div>
+
+  <header class="titlebar">
+    <span class="menu" title="ファイルメニュー">File</span>
+    <div class="brand">
+      <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor"><path d="M9 3v11.55A4 4 0 1 0 11 18V7h8V3H9z"/></svg>
+      <span class="name">chokotto-player</span>
+    </div>
+    <button class="wbtn" id="btnOptions" title="オプション">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+    <button class="wbtn" id="btnMin" title="最小化">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"><path d="M5 17h14"/></svg>
+    </button>
+    <button class="wbtn x" id="btnClose" title="閉じる">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </header>
+  <div class="strip leopard"></div>
+
+  <div class="display lcd">
+    <span id="time">0:00</span>
+    <span id="dur">0:00</span>
+    <canvas id="viz" width="328" height="28"></canvas>
+  </div>
+
+  <div class="display info">
+    <div class="track" id="track">ファイル未選択</div>
+    <div class="format-row">
+      <span class="badge" id="hrBadge">HI-RES</span>
+      <span id="fmt"></span>
+      <span id="state">停止</span>
+    </div>
+  </div>
+  <div class="deco checker"></div>
+
+  <input type="range" class="vol" id="vol" min="0" max="200" value="100" title="音量（100% が原音・最大200%）">
+  <span id="volNum">100%</span>
+  <button class="sbtn" id="btnEq" title="イコライザ">EQ</button>
+  <button class="sbtn" id="btnList" title="プレイリスト">PL</button>
+
+  <input type="range" class="seek" id="seek" min="0" max="1000" value="0">
+
+  <div class="controls">
+    <button class="cbtn" id="btnPrev" title="前の曲"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 4h3v16H5zM20 4v16L9 12z"/></svg></button>
+    <button class="cbtn play" id="btnPlay" title="再生"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l14-8z"/></svg></button>
+    <button class="cbtn" id="btnPause" title="一時停止"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg></button>
+    <button class="cbtn" id="btnStop" title="停止"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="1.5"/></svg></button>
+    <button class="cbtn" id="btnNext" title="次の曲"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 4h3v16h-3zM4 4v16l11-8z"/></svg></button>
+  </div>
+  <button class="sbtn" id="btnOpen" title="ファイルを開く"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l8 9H4zM4 16h16v4H4z"/></svg></button>
+  <button class="sbtn" id="btnShuf" title="シャッフル"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h3c4 0 6 10 10 10h5M3 17h3c1.6 0 2.8-1.6 4-3.6M14 9.6C15 8 16 7 18 7h3M18 4l3 3-3 3M18 14l3 3-3 3"/></svg></button>
+  <button class="sbtn" id="btnRep" title="全曲リピート"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11V9a3 3 0 0 1 3-3h13M17 3l3 3-3 3M20 13v2a3 3 0 0 1-3 3H4M7 21l-3-3 3-3"/></svg></button>
+  <span class="logo"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 3v11.55A4 4 0 1 0 11 18V7h8V3H9z"/></svg></span>
+  <div class="strip checker"></div>
+</div>
+
+<div id="wszSkin"></div>
+
+<audio id="audio"></audio>
+<!-- ハイレゾ優先時に使う直結用。Web Audio には一度もつながない -->
+<audio id="audioDirect"></audio>
+
+<script>
+  // 初期化中の例外を取りこぼさないよう、最初に捕捉器を仕掛ける
+  window.__errors = [];
+  window.addEventListener('error', (e) =>
+    window.__errors.push(e.message + ' @ ' + (e.filename || '') + ':' + (e.lineno || '')));
+  window.addEventListener('unhandledrejection', (e) =>
+    window.__errors.push('unhandled: ' + String(e.reason)));
+</script>
+<script src="winamp-skin.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const api = window.electronAPI;
+
+  /* <audio> は2本持つ。
+       audioGraph : Web Audio（EQ・増幅・スペクトラム）につなぐ方
+       audioDirect: 一度もつながない方。ハイレゾ優先時はこちらで鳴らす
+     createMediaElementSource() は一度つなぐと外せないため、
+     1本では「再生後の切り替えは再起動が必要」になっていた。 */
+  const audioGraph  = $('audio');
+  const audioDirect = $('audioDirect');
+  let audio = audioGraph;          // 今使っている方
+  const trackEl = $('track');
+  const fmtEl   = $('fmt');
+  const timeEl  = $('time');
+  const stateEl = $('state');
+  const seek    = $('seek');
+  const vol     = $('vol');
+  const durEl   = $('dur');
+  const hrBadge = $('hrBadge');
+  const volNum  = $('volNum');
+
+  let playlist = [];
+  let order = [];
+  let cursor = 0;
+  // volume は 0〜200（%）。100 が原音、それ以上は増幅。
+  let settings = { volume: 100, speed: 1, loop: 'none', shuffle: false, hires: false, netMeta: false, theme: 'plugin:signal' };
+  let seeking = false;
+  let playState = 'stopped';
+
+  let vState = { playing: false, current: 0, duration: 0 };
+
+  // 動画かどうかの判定は main 側の一覧をそのまま使う（定義の二重管理を避ける）
+  let VIDEO_EXT = ['.mp4','.m4v','.webm','.mkv','.mov'];
+  api.mediaExts().then((x) => {
+    if (x && x.video) VIDEO_EXT = x.video.map((e) => '.' + e);
+  }).catch(() => {});
+  const isVideoPath = (p) => VIDEO_EXT.some(e => p.toLowerCase().endsWith(e));
+  const baseName = (p) => p.split(/[\\/]/).pop();
+  const current = () => playlist[order[cursor]];
+  const isVid = () => { const f = current(); return !!f && isVideoPath(f); };
+  const fill = (el, pct) => el.style.setProperty('--p', pct + '%');
+
+  function fmt(s) {
+    if (!isFinite(s) || s < 0) s = 0;
+    const m = Math.floor(s / 60);
+    const r = Math.floor(s % 60);
+    return m + ':' + String(r).padStart(2, '0');
+  }
+
+  /* ---------- スペクトラム表示 ---------- */
+  const cv = $('viz'), cx = cv.getContext('2d');
+  const BARS = 22;
+  const vizPeak = new Float32Array(22);
+  let actx = null, analyser = null, gainNode = null, freq = null;
+  let preampNode = null, eqFilters = [];
+  const wired = new WeakSet();
+
+  // Winamp と同じ 10 バンド
+  const EQ_BANDS = [70, 180, 320, 600, 1000, 3000, 6000, 12000, 14000, 16000];
+  let eqSettings = { enabled: false, preamp: 0, gains: EQ_BANDS.map(() => 0) };
+
+  /** イコライザ設定を音の経路へ反映する */
+  function applyEq(s) {
+    if (s) eqSettings = s;
+    if (!actx || !preampNode) return;
+    const on = !!eqSettings.enabled;
+    // プリアンプは dB 指定なので倍率へ直す
+    preampNode.gain.value = on ? Math.pow(10, (eqSettings.preamp || 0) / 20) : 1;
+    eqFilters.forEach((f, i) => {
+      f.gain.value = on ? (eqSettings.gains[i] || 0) : 0;
+    });
+  }
+
+  /* 音の経路
+       通常      : audio → GainNode → Analyser → 出力
+                   GainNode があるので 100% を超える増幅ができる。
+       ハイレゾ優先: audio → 出力（解析経路を通さず原音のまま）
+                   この場合は 100% までしか出せない。 */
+  function wireAudio(el) {
+    if (el !== audioGraph) return;   // 直結用は決してつながない
+    try {
+      if (!actx) {
+        actx = new AudioContext();
+        preampNode = actx.createGain();
+        // プリアンプ → 10バンド → 音量 → 解析 → 出力
+        eqFilters = EQ_BANDS.map((hz) => {
+          const b = actx.createBiquadFilter();
+          b.type = 'peaking';
+          b.frequency.value = hz;
+          b.Q.value = 1.0;
+          b.gain.value = 0;
+          return b;
+        });
+        gainNode = actx.createGain();
+        analyser = actx.createAnalyser();
+        analyser.fftSize = 128;
+        analyser.smoothingTimeConstant = 0.8;
+        freq = new Uint8Array(analyser.frequencyBinCount);
+
+        let node = preampNode;
+        for (const f of eqFilters) { node.connect(f); node = f; }
+        node.connect(gainNode);
+        gainNode.connect(analyser);
+        analyser.connect(actx.destination);
+
+        window.__actx = actx; window.__gain = gainNode;   // 診断用
+        applyEq(eqSettings);
+      }
+      if (!wired.has(el)) { actx.createMediaElementSource(el).connect(preampNode); wired.add(el); }
+      if (actx.state === 'suspended') actx.resume();
+    } catch (e) {
+      // 解析に失敗しても再生自体は続けられるようにする
+      analyser = null; gainNode = null;
+    }
+    applyVolume();
+  }
+
+  /** 音量を経路に応じて反映する */
+  function applyVolume() {
+    const v = settings.volume / 100;          // 0.0〜2.0
+    audioDirect.volume = Math.min(1, v);      // 直結用は 100% が上限
+    if (gainNode && audio === audioGraph) {
+      audio.volume = 1;                       // 素材は原音のまま通し
+      gainNode.gain.value = v;                // 増幅は GainNode 側で行う
+    } else {
+      audio.volume = Math.min(1, v);          // 解析経路なしでは 100% が上限
+    }
+    api.videoCmd({ type: 'volume', value: v });
+    fill(vol, settings.volume / 2);           // 目盛りは 0〜200 を 0〜100% 幅で描く
+    volNum.textContent = settings.volume + '%';
+  }
+
+  let vizIdleDrawn = false;
+
+  function drawViz() {
+    requestAnimationFrame(drawViz);
+    const live = analyser && audio === audioGraph && !audio.paused;
+    // 停止中は描き直さない（待機時に CPU を使い続けないため）
+    if (!live) {
+      if (vizIdleDrawn) return;
+      vizIdleDrawn = true;
+    } else {
+      vizIdleDrawn = false;
+    }
+    const w = cv.width, h = cv.height;
+    cx.clearRect(0, 0, w, h);
+    if (live) analyser.getByteFrequencyData(freq);
+    // 色は配色（テーマ）から取る
+    const cs = getComputedStyle(document.body);
+    const ca = cs.getPropertyValue('--viz-a').trim() || '#3ee7f2';
+    const cb = cs.getPropertyValue('--viz-b').trim() || '#b56bff';
+    const idle = cs.getPropertyValue('--viz-idle').trim() || 'rgba(62,231,242,.14)';
+    const grad = cx.createLinearGradient(0, h, 0, 0);
+    const cm = cs.getPropertyValue('--viz-m').trim();
+    const cg = cs.getPropertyValue('--viz-grad').trim();
+    if (cg) {   // 下から上へ、なめらかに色を変える
+      const st = cg.split(',').map((x) => x.trim());
+      st.forEach((c, i) => grad.addColorStop(i / (st.length - 1), c));
+    } else if (cm) {   // 3色（赤・黄・白）の帯にする
+      grad.addColorStop(0, ca); grad.addColorStop(.35, ca);
+      grad.addColorStop(.36, cm); grad.addColorStop(.72, cm);
+      grad.addColorStop(.73, cb); grad.addColorStop(1, cb);
+    } else {
+      grad.addColorStop(0, ca); grad.addColorStop(1, cb);
+    }
+    const bw = w / BARS;
+    const gap = Math.max(3, Math.round(bw * 0.3));
+    const pk = cs.getPropertyValue('--viz-peak').trim() || cb;
+    for (let i = 0; i < BARS; i++) {
+      // 低音から高音まで、耳の感じ方に近い間隔で拾う
+      const v = live ? freq[Math.floor(Math.pow(i / BARS, 1.6) * freq.length * 0.62) + 1] / 255 : 0;
+      const x = Math.round(i * bw + gap / 2), bwi = Math.max(1, Math.round(bw - gap));
+      if (!live) {   // 待機中は細い目盛りだけ
+        cx.fillStyle = idle; cx.fillRect(x, h - 2, bwi, 2);
+        vizPeak[i] = 0; continue;
+      }
+      const bh = Math.max(2, Math.round(v * (h - 3)));
+      cx.fillStyle = grad; cx.fillRect(x, h - bh, bwi, bh);
+      vizPeak[i] = Math.max(vizPeak[i] - 0.35, bh);
+      cx.fillStyle = pk; cx.fillRect(x, Math.round(h - vizPeak[i] - 2), bwi, 1.5);
+    }
+  }
+  drawViz();
+  setInterval(() => { if (document.body.dataset.ps !== playState) document.body.dataset.ps = playState; }, 200);
+
+  function setTime(cur, dur) {
+    timeEl.textContent = fmt(cur);
+    durEl.textContent = fmt(dur || 0);
+    if (dur) {
+      const pct = (cur / dur) * 100;
+      if (!seeking) { seek.value = pct * 10; fill(seek, pct); }
+    }
+    paintSkin(cur, dur);
+  }
+
+  function paintSkin(cur, dur) {
+    if (!window.WinampSkin || !WinampSkin.isActive()) return;
+    WinampSkin.update({
+      title: playlist.length ? nameOf(current()) : 'CHOKOTTO PLAYER',
+      current: cur ?? 0, duration: dur ?? 0,
+      state: playState, volume: settings.volume / 100,
+    });
+  }
+
+  /* ---------- 出力経路の切り替え ----------
+     keep=true なら再生位置と再生/停止状態を引き継ぐ（設定変更時）。 */
+  function selectOutput(keep) {
+    const want = settings.hires ? audioDirect : audioGraph;
+    if (want === audio) { wireAudio(audio); return; }
+    const old = audio;
+    const src = old.getAttribute('src');
+    const t = old.currentTime;
+    const wasPlaying = !old.paused;
+    old.pause(); old.removeAttribute('src'); old.load();
+
+    audio = want;
+    wireAudio(audio);
+    audio.playbackRate = settings.speed;
+    applyVolume();
+    if (keep && src && !isVid()) {
+      const el = audio;
+      el.src = src;
+      el.addEventListener('loadedmetadata', () => {
+        if (el === audio) el.currentTime = t;
+      }, { once: true });
+      if (wasPlaying) el.play().catch(() => { stateEl.textContent = '再生不可'; });
+    }
+  }
+
+  /* ---------- 形式表示 ---------- */
+  let fileMeta = null;
+  let outRate = 0;   // 出力デバイスのサンプルレート（分かったときだけ）
+
+  const CODEC_NAME = { flac: 'FLAC', pcm: 'PCM', alac: 'ALAC', aac: 'AAC',
+                       mp3: 'MP3', vorbis: 'OGG', opus: 'OPUS' };
+  const khz = (r) => (r / 1000).toFixed(r % 1000 ? 1 : 0);
+
+  function isHiRes(m) {
+    return !!(m && m.lossless && ((m.bitDepth >= 24 && m.sampleRate > 48000) || m.sampleRate >= 88200));
+  }
+
+  function paintFormat() {
+    const m = fileMeta;
+    fmtEl.className = '';
+    fmtEl.textContent = '';
+    fmtEl.title = '';
+    hrBadge.classList.remove('on');
+    if (!m || !m.codec) return;
+
+    const name = m.container === 'wav' && m.codec === 'pcm' ? 'WAV'
+               : m.container === 'aiff' ? 'AIFF'
+               : (CODEC_NAME[m.codec] || m.codec.toUpperCase());
+    let s = name;
+    if (m.bitDepth && m.sampleRate) s += ` ${m.bitDepth}/${khz(m.sampleRate)}`;
+    else if (m.sampleRate) s += ` ${khz(m.sampleRate)}k`;
+    fmtEl.textContent = s;
+
+    const tip = [s];
+    if (m.nativePlayable === false && !m.converted) {
+      fmtEl.className = 'ng';
+      tip.push(m.codec === 'alac' ? '再生の準備中です' : 'この形式はまだ再生に対応していません');
+    } else if (isHiRes(m)) {
+      fmtEl.className = 'hr';
+      hrBadge.classList.add('on');
+      if (outRate && m.sampleRate > outRate) {
+        tip.push(`出力デバイスが ${khz(outRate)}kHz のため、その周波数に変換されて鳴っています`);
+        tip.push('Windows の「サウンド」設定で既定の形式を上げると原音に近づきます');
+      }
+      if (!settings.hires) tip.push('オプションの「ハイレゾ優先」で EQ 等を通さず出力できます');
+    }
+    if (m.converted) tip.push('ALAC を一時的な WAV に変換して再生しています（終了時に消えます）');
+    fmtEl.title = tip.join('\n');
+  }
+
+  /* 出力デバイスの周波数は AudioContext の既定値から分かる。
+     ハイレゾ曲を初めて開いたときに一度だけ調べる。 */
+  function probeOutRate() {
+    if (outRate) return;
+    if (actx) { outRate = actx.sampleRate; return; }
+    try {
+      const probe = new AudioContext();
+      outRate = probe.sampleRate;
+      probe.close().catch(() => {});
+    } catch { /* 分からなければ表示しないだけ */ }
+  }
+
+  const fileUrl = (p) => (api.urlFor ? api.urlFor(p) : 'file:///' + p.replace(/\\/g, '/'));
+  const isDeferred = (p) => /\.m4a$/i.test(p);
+
+  /** 今の出力経路で鳴らし始める。
+      autoplay を省くと「今が再生中なら鳴らす」（形式確認・変換を待った後用） */
+  function startAudio(url, autoplay = playState === 'playing') {
+    audio.src = url;
+    applyVolume();
+    audio.playbackRate = settings.speed;
+    if (!autoplay) return;
+    audio.play().catch(() => {
+      if (fileMeta && fileMeta.codec === 'alac' && !fileMeta.converted) return;   // 変換待ちの表示を残す
+      stateEl.textContent = '再生不可';
+    });
+  }
+
+  async function showFormat(file) {
+    fileMeta = null;
+    paintFormat();
+    if (isVideoPath(file)) return;
+    let m = null;
+    if (api.mediaMeta) {
+      try { m = await api.mediaMeta(file); } catch { m = null; }
+    }
+    if (current() !== file) return;          // 読んでいる間に曲が変わった
+    fileMeta = m;
+    if (isHiRes(m)) probeOutRate();
+    paintFormat();
+    showName(file, m);
+
+    if (m && m.codec === 'alac') {
+      await playAlac(file, m);
+    } else if (isDeferred(file)) {
+      startAudio(fileUrl(file));             // AAC などはそのまま鳴る
+    } else if (m && m.nativePlayable === false) {
+      stateEl.textContent = (CODEC_NAME[m.codec] || '形式') + '未対応';
+    }
+  }
+
+  /* ---------- ALAC: 一時 WAV に変換して鳴らす ---------- */
+  async function playAlac(file, m) {
+    if (!api.alacDecode) { stateEl.textContent = 'ALAC未対応'; return; }
+    stateEl.textContent = '変換中';
+    let r = null;
+    try { r = await api.alacDecode(file); } catch (e) { r = { ok: false, error: String(e) }; }
+    if (current() !== file) return;          // 変換中に曲が変わった
+    if (!r || !r.ok) {
+      if (r && r.cancelled) return;
+      stateEl.textContent = '変換失敗';
+      fmtEl.className = 'ng';
+      fmtEl.title = 'ALAC の変換に失敗しました' + (r && r.error ? '\n' + r.error : '');
+      return;
+    }
+    m.converted = true;
+    paintFormat();
+    startAudio(fileUrl(r.path));
+    stateEl.textContent = playState === 'playing' ? '再生中' : playState === 'paused' ? '一時停止' : '停止';
+  }
+
+  if (api.onAlacProgress) {
+    api.onAlacProgress((x) => {
+      if (!x || x.path !== current() || !fileMeta || fileMeta.converted) return;
+      stateEl.textContent = `変換 ${x.pct}%`;
+    });
+  }
+
+  /* ---------- 曲名の表示 ----------
+     タグがあればタグを、なければファイル名を出す。
+     「ネットで曲名を補う」がオンのときだけ、足りない分を MusicBrainz に聞く。
+     どちらもメモリにだけ置く。 */
+  const names = new Map();   // path -> { name, tip, src: 'tag' | 'mb' }
+  const nameOf = (p) => (names.get(p) || {}).name || baseName(p);
+
+  function setName(file, name, tip, src) {
+    names.set(file, { name, tip, src });
+    if (current() === file && !playErr) { trackEl.textContent = name; trackEl.title = tip || ''; }
+    pushPlaylist();
+  }
+
+  function tagName(t) {
+    if (!t || !t.title || t.titleFromFilename) return '';
+    return t.artist ? `${t.artist} - ${t.title}` : t.title;
+  }
+
+  async function showName(file, m) {
+    const t = (m && m.tags) || {};
+    const local = tagName(t);
+    if (local) {
+      const extra = [t.album, t.year].filter(Boolean).join(' / ');
+      setName(file, local, extra, 'tag');
+    }
+    const lacking = !local || !t.artist;
+    if (!lacking || !settings.netMeta || !api.metaLookup) return;
+    const prev = names.get(file);
+    if (prev && prev.src === 'mb') return;   // 取得済み
+
+    let r = null;
+    try {
+      r = await api.metaLookup({
+        name: baseName(file),
+        tags: { title: t.title, artist: t.artist, album: t.album,
+                albumArtist: t.albumArtist, titleFromFilename: !!t.titleFromFilename },
+      });
+    } catch { r = null; }
+    if (!r || !settings.netMeta) return;     // 待つ間にオフにされたら使わない
+    const tip = ['MusicBrainz より補完（タグは変更していません）',
+                 [r.album, r.year].filter(Boolean).join(' / ')].filter(Boolean).join('\n');
+    const before = names.get(file);          // オフにしたとき戻す先
+    setName(file, r.artist ? `${r.artist} - ${r.title}` : r.title, tip, 'mb');
+    names.get(file).prev = before && before.src === 'tag' ? before : null;
+  }
+
+  /** オフにしたときは、ネットから得た名前を表示から外す（タグ由来に戻す） */
+  function dropNetNames() {
+    for (const [p, v] of names) {
+      if (v.src !== 'mb') continue;
+      if (v.prev) names.set(p, v.prev); else names.delete(p);
+    }
+    const f = playlist.length ? current() : null;
+    if (f && !isVideoPath(f)) {
+      trackEl.textContent = nameOf(f);
+      trackEl.title = (names.get(f) || {}).tip || '';
+    }
+    pushPlaylist();
+  }
+
+  function buildOrder() {
+    order = playlist.map((_, i) => i);
+    if (settings.shuffle) {
+      for (let i = order.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [order[i], order[j]] = [order[j], order[i]];
+      }
+    }
+  }
+
+  async function openFiles() {
+    const paths = await api.openFiles();
+    if (!paths || paths.length === 0) return;
+    playlist = paths; buildOrder(); cursor = 0; load(0);
+  }
+
+  function load(index) {
+    if (index < 0 || index >= order.length) return;
+    cursor = index;
+    const file = current();
+
+    if (isVideoPath(file)) {
+      audio.pause(); audio.removeAttribute('src'); audio.load();
+      api.videoCmd({ type: 'load', path: file, volume: settings.volume / 100, rate: settings.speed });
+    } else {
+      api.videoCmd({ type: 'stop' });
+      vState = { playing: false, current: 0, duration: 0 };
+      selectOutput(false);
+      // m4a は中身が AAC か ALAC か開けるまで分からない。
+      // 形式を確かめてから鳴らす（showFormat 側で。ALAC なら変換してから）
+      if (isDeferred(file)) { audio.pause(); audio.removeAttribute('src'); audio.load(); }
+      else startAudio(fileUrl(file), true);   // 曲を選んだら常に鳴らす（v1.0 と同じ）
+    }
+
+    playErr = false;
+    trackEl.textContent = nameOf(file);
+    trackEl.title = '';
+    stateEl.textContent = '再生中';
+    playState = 'playing';
+    seek.value = 0; fill(seek, 0); timeEl.textContent = '0:00'; durEl.textContent = '0:00';
+    paintSkin(0, 0);
+    pushPlaylist();
+    showFormat(file);
+  }
+
+  function play() {
+    if (playlist.length === 0) { trackEl.textContent = 'ファイル未選択'; return; }
+    if (isVid()) api.videoCmd({ type: 'play' });
+    else { wireAudio(audio); audio.play().catch(() => {}); }
+    stateEl.textContent = '再生中'; playState = 'playing';
+  }
+
+  function pause() {
+    if (isVid()) api.videoCmd({ type: 'pause' });
+    else audio.pause();
+    stateEl.textContent = '一時停止'; playState = 'paused';
+  }
+
+  function stop() {
+    if (isVid()) api.videoCmd({ type: 'stop' });
+    else { audio.pause(); audio.currentTime = 0; }
+    seek.value = 0; fill(seek, 0); timeEl.textContent = '0:00';
+    stateEl.textContent = '停止'; playState = 'stopped';
+    paintSkin(0, 0);
+  }
+
+  const prev = () => cursor > 0 ? load(cursor - 1) : stop();
+  function next() {
+    if (cursor < order.length - 1) load(cursor + 1);
+    else if (settings.loop === 'all') load(0);
+    else stop();
+  }
+  function onEnded() {
+    if (settings.loop === 'one') {
+      if (isVid()) { api.videoCmd({ type: 'seek', fraction: 0 }); api.videoCmd({ type: 'play' }); }
+      else { audio.currentTime = 0; audio.play().catch(() => {}); }
+      return;
+    }
+    next();
+  }
+
+  /* 再生できなかったときは、理由まで出す。
+     「再生不可」だけでは、形式が違うのか壊れているのか判断できない。 */
+  function playFailMessage(code, path) {
+    const ext = (path || '').split('.').pop().toLowerCase();
+    // 描画エンジンが読めない形式は分かっているので、名指しで案内する
+    const known = { avi: 'AVI', flv: 'FLV', wmv: 'WMV', aiff: 'AIFF', aif: 'AIFF' };
+    if (known[ext]) return `${known[ext]} は非対応です（MP4等へ変換してください）`;
+
+    switch (code) {
+      case 1: return '再生を中断しました';
+      case 2: return 'ファイルを読めません（移動・削除された可能性）';
+      case 3: return '中の映像か音声が非対応です（ファイルは壊れていません）';
+      case 4: return 'この形式には対応していません';
+      default: return '再生できませんでした';
+    }
+  }
+
+  let playErr = false;   // 今の曲で理由を表示中か（曲名で上書きしないため）
+  function showPlayError(code) {
+    playErr = true;
+    stateEl.textContent = '再生不可';
+    const msg = playFailMessage(code, current());
+    trackEl.textContent = msg;
+    trackEl.title = `${msg}\n${current() || ''}`;   // 全文はカーソルを合わせると出る
+  }
+
+  // 2本とも同じ扱い。ただし「今使っている方」から来たものだけ拾う
+  for (const el of [audioGraph, audioDirect]) {
+    el.addEventListener('timeupdate', () => { if (el === audio && !isVid()) setTime(audio.currentTime, audio.duration || 0); });
+    el.addEventListener('ended', () => { if (el === audio && !isVid()) onEnded(); });
+    el.addEventListener('error', () => {
+      if (el !== audio || isVid() || !el.getAttribute('src')) return;
+      // ALAC は変換して鳴らすので、元ファイルを読めなかった誤りは出さない
+      if (fileMeta && fileMeta.codec === 'alac') return;
+      showPlayError(el.error ? el.error.code : 0);
+    });
+  }
+
+  api.onVideoEvent((ev) => {
+    switch (ev.type) {
+      case 'time':
+        vState.current = ev.current; vState.duration = ev.duration;
+        if (isVid()) setTime(ev.current, ev.duration);
+        break;
+      case 'state':
+        vState.playing = ev.playing;
+        if (isVid()) {
+          stateEl.textContent = ev.playing ? '再生中' : '一時停止';
+          playState = ev.playing ? 'playing' : 'paused';
+          paintSkin(vState.current, vState.duration);
+        }
+        break;
+      case 'ended': if (isVid()) onEnded(); break;
+      case 'meta':  vState.duration = ev.duration; break;
+      case 'error':
+        if (isVid()) showPlayError(typeof ev.code === 'number' ? ev.code : 0);
+        break;
+    }
+  });
+
+  api.onVideoClosed(() => {
+    if (isVid()) { stateEl.textContent = '停止'; playState = 'stopped'; seek.value = 0; fill(seek, 0); timeEl.textContent = '0:00'; }
+  });
+
+  seek.addEventListener('mousedown', () => seeking = true);
+  seek.addEventListener('input', () => fill(seek, seek.value / 10));
+  seek.addEventListener('change', () => {
+    const f = seek.value / 1000;
+    if (isVid()) api.videoCmd({ type: 'seek', fraction: f });
+    else if (audio.duration) audio.currentTime = f * audio.duration;
+    seeking = false;
+  });
+
+  vol.addEventListener('input', () => {
+    settings.volume = Number(vol.value);
+    applyVolume();
+  });
+
+  $('btnOpen').onclick    = openFiles;
+  $('btnPlay').onclick    = play;
+  $('btnPause').onclick   = pause;
+  $('btnStop').onclick    = stop;
+  $('btnPrev').onclick    = prev;
+  $('btnNext').onclick    = next;
+  $('btnOptions').onclick = () => api.openOptions();
+  $('btnMin').onclick     = () => api.minimize();
+  $('btnClose').onclick   = () => api.close();
+  // 内蔵スキンだけにあるボタン（Winamp スキンでは本体側のボタンを使う）
+  let plShown = false, eqShown = false;
+  $('btnList').onclick = () => { plShown = !plShown; api.plToggle(plShown); };
+  /* シャッフル・リピート。オプション窓と同じ設定を切り替え、保存もする */
+  const btnShuf = $('btnShuf'), btnRep = $('btnRep');
+  function paintToggles() {
+    btnShuf.classList.toggle('on', !!settings.shuffle);
+    btnRep.classList.toggle('on', settings.loop === 'all');
+  }
+  btnShuf.onclick = () => api.pushSettings({ ...settings, shuffle: !settings.shuffle });
+  btnRep.onclick  = () => api.pushSettings({ ...settings, loop: settings.loop === 'all' ? 'none' : 'all' });
+  $('btnEq').onclick   = () => { eqShown = !eqShown; api.eqToggle(eqShown); };
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') api.close();
+    // メニューに書いた accelerator は表示だけなので、ここで実際に受ける
+    if (e.key === 'F1') { e.preventDefault(); api.openAbout(); }
+  });
+
+  /* ---- ファイルメニュー（OSネイティブ） ---- */
+  const menuLabel = document.querySelector('.menu');
+  let menuBlockedUntil = 0;
+  function openFileMenu() {
+    if (Date.now() < menuBlockedUntil) return;
+    menuBlockedUntil = Date.now() + 400;
+    const r = menuLabel.getBoundingClientRect();
+    api.showFileMenu(r.left, r.bottom);
+  }
+  menuLabel.addEventListener('mouseenter', openFileMenu);
+  menuLabel.addEventListener('click', openFileMenu);
+
+  api.onMenuCommand((name) => {
+    switch (name) {
+      case 'open-files': openFiles(); break;
+      case 'play':  play(); break;
+      case 'pause': pause(); break;
+      case 'stop':  stop(); break;
+      case 'prev':  prev(); break;
+      case 'next':  next(); break;
+      case 'skin-pick':  pickSkin(); break;
+      case 'skin-reset': resetSkin(); break;
+    }
+  });
+
+  /* ---- Winamp クラシックスキン ---- */
+  const SKIN_HOOKS = {
+    onPrev: prev, onNext: next, onPlay: play, onPause: pause, onStop: stop,
+    onOpen: openFiles,
+    onMenu: () => api.openOptions(),
+    onMinimize: () => api.minimize(),
+    onClose: () => api.close(),
+    onSeek: (f) => {
+      if (isVid()) api.videoCmd({ type: 'seek', fraction: f });
+      else if (audio.duration) audio.currentTime = f * audio.duration;
+    },
+    onVolume: (f) => {
+      // Winamp スキンのつまみは 0〜1。原音(100%)を上限として扱う。
+      settings.volume = Math.round(f * 100);
+      vol.value = settings.volume;
+      applyVolume();
+      paintSkin(audio.currentTime, audio.duration || 0);
+    },
+    onShuffle: (v) => {
+      settings.shuffle = v;
+      if (playlist.length) {
+        const playing = current();
+        buildOrder();
+        cursor = Math.max(0, order.findIndex(i => playlist[i] === playing));
+      }
+    },
+    onRepeat: (v) => { settings.loop = v ? 'all' : 'none'; },
+    onEqualizer: (v) => api.eqToggle(v),
+    onPlaylist:  (v) => api.plToggle(v),
+  };
+
+  /* ---- プレイリスト窓 ---- */
+  function pushPlaylist() {
+    api.plState({
+      items: order.map((i) => ({ name: nameOf(playlist[i]), video: isVideoPath(playlist[i]) })),
+      cur: playlist.length ? cursor : -1,
+    });
+  }
+
+  api.onPlRequest(pushPlaylist);
+  api.onPlClosed(() => {
+    plShown = false;
+    if (window.WinampSkin && WinampSkin.isActive()) WinampSkin.setToggle('pl', false);
+  });
+
+  api.onPlCmd(async (c) => {
+    switch (c.type) {
+      case 'play':
+        load(c.index);
+        break;
+      /* 再生中の曲は「パス」ではなく playlist 上の位置で追う。
+         同じファイルを2回追加できるので、パスで探すと別の方の行に
+         飛んでしまい、関係ない行を消しただけで再生がやり直しになる。 */
+      case 'add': {
+        const paths = await api.openFiles();
+        if (!paths || !paths.length) break;
+        const wasEmpty = playlist.length === 0;
+        const playingIdx = wasEmpty ? -1 : order[cursor];
+        playlist = playlist.concat(paths);
+        buildOrder();
+        if (wasEmpty) { cursor = 0; load(0); break; }
+        // 末尾に足しただけなので、再生中の曲の位置は変わらない
+        const at = order.indexOf(playingIdx);
+        cursor = at >= 0 ? at : 0;
+        pushPlaylist();
+        break;
+      }
+      case 'remove': {
+        const target = order[c.index];
+        if (target === undefined) break;
+        const playingIdx = order[cursor];
+
+        playlist = playlist.filter((_, i) => i !== target);
+        if (!playlist.length) { stop(); order = []; cursor = 0; pushPlaylist(); break; }
+        buildOrder();
+
+        if (playingIdx === target) {
+          // 再生中の曲そのものを消した。同じ位置にある次の曲へ移る。
+          cursor = Math.min(c.index, order.length - 1);
+          load(cursor);
+        } else {
+          // 消した曲より後ろにいたなら、位置が1つ手前へずれる
+          const moved = playingIdx > target ? playingIdx - 1 : playingIdx;
+          const at = order.indexOf(moved);
+          cursor = at >= 0 ? at : 0;
+          pushPlaylist();
+        }
+        break;
+      }
+      case 'clear':
+        stop();
+        playlist = []; order = []; cursor = 0;
+        trackEl.textContent = 'ファイル未選択';
+        pushPlaylist();
+        break;
+    }
+  });
+
+  /* ---- イコライザ ---- */
+  api.onEqApply((s) => applyEq(s));
+  api.onEqClosed(() => {
+    eqShown = false;
+    if (window.WinampSkin && WinampSkin.isActive()) WinampSkin.setToggle('eq', false);
+  });
+
+  function useSkin(skin) {
+    if (!skin) return false;
+    if (skin.error) { trackEl.textContent = skin.error; return false; }
+    const ok = WinampSkin.apply(skin.images, skin.texts, SKIN_HOOKS);
+    if (ok) {
+      WinampSkin.setToggle('shuffle', settings.shuffle);
+      WinampSkin.setToggle('repeat', settings.loop === 'all');
+      paintSkin(audio.currentTime, audio.duration || 0);
+    }
+    return ok;
+  }
+
+  async function pickSkin()  { useSkin(await api.skinPick()); }
+  async function resetSkin() {
+    await api.skinReset();
+    WinampSkin.clear();
+    vizIdleDrawn = false;
+  }
+
+  api.skinRestore().then(useSkin).catch(() => {});
+
+  /* ---- オプション画面からの設定反映 ---- */
+  function applySettings(s) {
+    const wasShuffle = settings.shuffle;
+    const wasHires = settings.hires;
+    const wasNet = !!settings.netMeta;
+    settings = Object.assign(settings, s);
+    vol.value = settings.volume;
+    // 配色を切り替え、スペクトラムを新しい色で描き直す
+    applyTheme(settings.theme);
+    paintToggles();
+    audio.playbackRate = settings.speed;
+    if (settings.hires !== wasHires) { selectOutput(true); paintFormat(); }
+    if (!!settings.netMeta !== wasNet) {
+      if (!settings.netMeta) dropNetNames();
+      else if (playlist.length && !isVid() && fileMeta) showName(current(), fileMeta);
+    }
+    applyVolume();
+    api.videoCmd({ type: 'rate', value: settings.speed });
+    if (settings.shuffle !== wasShuffle && playlist.length) {
+      const playing = current();
+      buildOrder();
+      cursor = Math.max(0, order.findIndex(i => playlist[i] === playing));
+    }
+  }
+  api.onSettings(applySettings);
+
+  /* ---- 見た目（内蔵 5 種 + スキンのプラグイン） ---- */
+  const BUILTIN_THEMES = ['vintage', 'rock', 'glass', 'retro', 'white'];
+  let themeWant = '';
+  async function applyTheme(t) {
+    if (t === themeWant) return;
+    themeWant = t;
+    const old = document.getElementById('pluginSkin');
+    if (typeof t === 'string' && t.startsWith('plugin:')) {
+      let css = '';
+      try { css = await api.skinCss(t.slice(7), 'main'); } catch { css = ''; }
+      if (themeWant !== t) return;           // 読む間に別の見た目が選ばれた
+      if (css) {
+        const st = document.createElement('style');
+        st.id = 'pluginSkin';
+        st.textContent = css;
+        document.head.appendChild(st);
+        if (old) old.remove();
+        document.body.dataset.theme = 'plugin';
+        vizIdleDrawn = false;
+        document.body.classList.remove('booting');
+        return;
+      }
+      t = 'vintage';                          // 見つからなければ標準に戻す
+    }
+    if (old) old.remove();
+    document.body.dataset.theme = BUILTIN_THEMES.includes(t) ? t : 'vintage';
+    vizIdleDrawn = false;
+    document.body.classList.remove('booting');
+  }
+  // 設定が読めなくても、1.5 秒後には必ず表示する
+  setTimeout(() => document.body.classList.remove('booting'), 1500);
+
+  /* 起動時に、保存されている設定を読み込む。
+     以前はこれが無く、ハイレゾ優先などが毎回初期値に戻っていた。 */
+  api.getSettings().then((s) => { if (s) applySettings(s); }).catch(() => {});
+
+  /* ---- 起動引数で渡されたファイル ---- */
+  // 起動時にファイルを開けなかったときの表示
+  api.onOpenFailed((msg) => {
+    trackEl.textContent = msg;
+    stateEl.textContent = '再生不可';
+  });
+
+  api.onOpenPaths((paths) => {
+    if (!paths || !paths.length) return;
+    playlist = paths; buildOrder(); cursor = 0; load(0);
+  });
+
+  audio.volume = 1;
+  fill(vol, settings.volume / 2);
+  fill(seek, 0);
+
+</script>
+</body>
+</html>

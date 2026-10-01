@@ -1,0 +1,15 @@
+/* ===== 3. gameboy: ゲームボーイ風（豆緑液晶＋紫ボタン） ===== */
+body[data-theme="plugin"]{--txt:#0f380f;--sub:#306230;--line:rgba(15,56,15,.35);--accent:#0f380f;--accent-glow:rgba(0,0,0,0);--gold:#0f380f;--hot:#0f380f;--radius:10px;--r-sm:4px;
+ --win-bg:linear-gradient(180deg,#d4d0c8,#b9b4ab);--win-border:#8f8a80;--card-bg:#9bbc0f;--btn-bg:#8b2a5c;--btn-bg-hover:#a8386f;--play-bg:#8b2a5c;--play-ink:#f0d0e0;
+ --track-bg:#8bac0f;--viz-a:#0f380f;--viz-b:#306230;--viz-idle:rgba(15,56,15,.2);--font:"DotGothic16", monospace;--mono:"DotGothic16", monospace;--time-font:"DotGothic16", monospace}
+body[data-theme="plugin"] .display{border:6px solid #5c5a6b;border-radius:6px 6px 18px 6px;box-shadow:inset 0 0 8px rgba(15,56,15,.4)}
+body[data-theme="plugin"] #viz{background:#9bbc0f;border:4px solid #5c5a6b;border-radius:4px}
+body[data-theme="plugin"] .cbtn,body[data-theme="plugin"] .sbtn{color:#f0d0e0;border:0;box-shadow:0 2px 0 #4a1330}
+body[data-theme="plugin"] .sbtn{border-radius:999px;background:#6b6a73;box-shadow:0 2px 0 #333}
+body[data-theme="plugin"] .brand{color:#2b2b8c;font-style:italic;font-weight:900}
+body[data-theme="plugin"] .badge{background:#0f380f;color:#9bbc0f;box-shadow:none;border-radius:0}
+body[data-theme="plugin"] .menu{color:#2b2b8c;border-color:#8f8a80}
+body[data-theme="plugin"] .wbtn{color:#5c5a6b}
+body[data-theme="plugin"]{--btn-ink:#f0d0e0}
+body[data-theme="plugin"] .display{border-width:3px;border-radius:4px 4px 10px 4px}
+body[data-theme="plugin"] #viz{border:0}

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<script src="web-api.js"></script>
+<title>ちょこっとplayer - 映像</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: #000;
+    overflow: hidden;
+    user-select: none;
+    font-family: "MS UI Gothic", "ＭＳ Ｐゴシック", sans-serif;
+  }
+
+  .wrap { width: 100%; height: 100%; display: flex; flex-direction: column; }
+
+  /* ---- 細いタイトルバー（自動で隠れる） ---- */
+  .bar {
+    -webkit-app-region: drag;
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 22px;
+    display: flex; align-items: center;
+    padding: 0 4px;
+    background: linear-gradient(180deg, rgba(47,127,168,.95) 0%, rgba(13,70,102,.95) 100%);
+    border-bottom: 1px solid #06202f;
+    color: #cfe9f7;
+    font-size: 10px; letter-spacing: 1px;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity .18s ease;
+  }
+  body:hover .bar, .bar:hover { opacity: 1; }
+  body.fs .bar { display: none; }
+
+  .bar .name {
+    flex: 1;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    padding-right: 6px;
+  }
+
+  .tb {
+    -webkit-app-region: no-drag;
+    width: 15px; height: 13px;
+    border: 1px solid;
+    border-color: #7fb6d6 #06202f #06202f #7fb6d6;
+    background: linear-gradient(180deg, #3a7fa0, #17546f);
+    color: #d8f2ff;
+    font-size: 9px; line-height: 9px; text-align: center;
+    cursor: pointer; padding: 0;
+    margin-left: 2px;
+  }
+  .tb:active { border-color: #06202f #7fb6d6 #7fb6d6 #06202f; }
+
+  /* ---- 映像 ---- */
+  .stage { flex: 1; position: relative; background: #000; }
+  video {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: contain;
+    background: #000;
+    display: block;
+  }
+
+  .hint {
+    position: absolute; left: 0; right: 0; bottom: 12px;
+    text-align: center;
+    color: #23e05a;
+    font-size: 11px;
+    text-shadow: 0 0 4px rgba(0,0,0,.9);
+    opacity: 0;
+    transition: opacity .18s ease;
+    pointer-events: none;
+  }
+  body:hover .hint { opacity: .75; }
+</style>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="skin-vars.css">
+<link rel="stylesheet" id="skinWindowsCss" href="skin-windows.css">
+</head>
+<body data-theme="vintage">
+<div class="wrap">
+  <div class="bar">
+    <span class="name" id="name">ちょこっとplayer - 映像</span>
+    <button class="tb" id="btnFs" title="全画面（ダブルクリックでも切替）">□</button>
+    <button class="tb" id="btnClose" title="閉じる">×</button>
+  </div>
+
+  <div class="stage">
+    <video id="v" playsinline></video>
+    <div class="hint">ダブルクリック: 全画面切替 ／ Esc: 全画面解除</div>
+  </div>
+</div>
+
+<script>
+  const v = document.getElementById('v');
+  const nameEl = document.getElementById('name');
+  const api = window.electronAPI;
+
+  const send = (ev) => api.videoEvent(ev);
+  const baseName = (p) => p.split(/[\\/]/).pop();
+
+  /* 音量。本体から来る値は 0.0〜2.0。
+     1.0 を超える増幅は GainNode でしか出せないので用意しておく。 */
+  let actx = null, gainNode = null, preampNode = null, eqFilters = [];
+  let wantVolume = 1;
+
+  const EQ_BANDS = [70, 180, 320, 600, 1000, 3000, 6000, 12000, 14000, 16000];
+  let eqSettings = { enabled: false, preamp: 0, gains: EQ_BANDS.map(() => 0) };
+
+  function ensureGraph() {
+    if (actx) return true;
+    try {
+      actx = new AudioContext();
+      preampNode = actx.createGain();
+      eqFilters = EQ_BANDS.map((hz) => {
+        const b = actx.createBiquadFilter();
+        b.type = 'peaking'; b.frequency.value = hz; b.Q.value = 1.0; b.gain.value = 0;
+        return b;
+      });
+      gainNode = actx.createGain();
+      let node = preampNode;
+      for (const f of eqFilters) { node.connect(f); node = f; }
+      node.connect(gainNode);
+      gainNode.connect(actx.destination);
+      actx.createMediaElementSource(v).connect(preampNode);
+      applyEq(null);
+      return true;
+    } catch (e) {
+      actx = null; gainNode = null; preampNode = null; eqFilters = [];
+      return false;
+    }
+  }
+
+  /** イコライザ設定を反映。必要なら解析経路を作る。 */
+  function applyEq(s) {
+    if (s) eqSettings = s;
+    if (eqSettings.enabled && !actx) { if (!ensureGraph()) return; }
+    if (!actx || !preampNode) return;
+    const on = !!eqSettings.enabled;
+    preampNode.gain.value = on ? Math.pow(10, (eqSettings.preamp || 0) / 20) : 1;
+    eqFilters.forEach((f, i) => { f.gain.value = on ? (eqSettings.gains[i] || 0) : 0; });
+    // 経路を作った直後は音量も入れ直す
+    setVolume(wantVolume);
+  }
+  api.onEqApply(applyEq);
+
+  function setVolume(value) {
+    wantVolume = value;
+    if (value > 1) {
+      // 増幅が必要なときだけ解析経路を作る
+      if (ensureGraph()) { v.volume = 1; gainNode.gain.value = value; return; }
+    }
+    if (gainNode) { v.volume = 1; gainNode.gain.value = value; }
+    else { v.volume = Math.min(1, value); }
+  }
+
+  /* ---- 本体からの指示 ---- */
+  api.onVideoCmd((c) => {
+    switch (c.type) {
+      case 'load':
+        v.src = api.urlFor ? api.urlFor(c.path) : 'file:///' + c.path.replace(/\\/g, '/');
+        setVolume(c.volume ?? 1);
+        v.playbackRate = c.rate ?? 1;
+        nameEl.textContent = baseName(c.path);
+        document.title = baseName(c.path);
+        v.play().catch((e) => send({ type: 'error', message: String(e) }));
+        break;
+      case 'play':   v.play().catch(() => {}); break;
+      case 'pause':  v.pause(); break;
+      case 'stop':   v.pause(); v.currentTime = 0; break;
+      case 'seek':   if (v.duration) v.currentTime = c.fraction * v.duration; break;
+      case 'volume': setVolume(c.value); break;
+      case 'rate':   v.playbackRate = c.value; break;
+    }
+  });
+
+  /* ---- 本体への通知 ---- */
+  v.addEventListener('timeupdate', () => {
+    send({ type: 'time', current: v.currentTime, duration: v.duration || 0 });
+  });
+  v.addEventListener('play',  () => send({ type: 'state', playing: true }));
+  v.addEventListener('pause', () => send({ type: 'state', playing: false }));
+  v.addEventListener('ended', () => send({ type: 'ended' }));
+  v.addEventListener('error', () => {
+    // 本体側で理由を日本語にするので、番号のまま渡す
+    const code = v.error ? v.error.code : 0;
+    send({ type: 'error', code, message: 'デコードできません (code ' + code + ')' });
+  });
+  v.addEventListener('loadedmetadata', () => {
+    send({ type: 'meta', width: v.videoWidth, height: v.videoHeight, duration: v.duration || 0 });
+  });
+
+  /* ---- 操作 ---- */
+  document.getElementById('btnClose').onclick = () => api.close();
+  document.getElementById('btnFs').onclick = () => api.toggleFullscreen();
+  document.querySelector('.stage').addEventListener('dblclick', () => api.toggleFullscreen());
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') api.toggleFullscreen();
+    if (e.key === ' ') { e.preventDefault(); v.paused ? v.play() : v.pause(); }
+  });
+
+  window.addEventListener('resize', () => {
+    document.body.classList.toggle('fs', window.innerHeight === screen.height);
+  });
+</script>
+<script src="skin-apply.js"></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+/* ===== 6. swiss: スイス・タイポ（白黒＋赤1点、大きな数字） ===== */
+body[data-theme="plugin"]{--txt:#000;--sub:#000;--line:#000;--accent:#e30613;--accent-glow:rgba(0,0,0,0);--gold:#e30613;--hot:#e30613;--radius:0;--r-sm:0;
+ --win-bg:#f2f0eb;--win-border:#000;--card-bg:transparent;--btn-bg:transparent;--btn-bg-hover:#000;--play-bg:#e30613;--play-ink:#fff;--track-bg:#000;
+ --viz-a:#000;--viz-b:#000;--viz-idle:rgba(0,0,0,.12);--font:"Zen Kaku Gothic New", "Helvetica Neue", Arial, sans-serif;--mono:"Space Mono", monospace;--time-font:"Anton", "Arial Black", sans-serif}
+body[data-theme="plugin"] .display{border:0;border-top:2px solid #000;border-bottom:1px solid #000}
+body[data-theme="plugin"] .track{font-size:11px;font-weight:900;letter-spacing:-.02em}
+body[data-theme="plugin"] #time{font-size:17px;font-weight:400;color:#e30613}
+body[data-theme="plugin"] .cbtn,body[data-theme="plugin"] .sbtn{border:2px solid #000;border-radius:0;box-shadow:none}
+body[data-theme="plugin"] .cbtn:hover,body[data-theme="plugin"] .sbtn:hover{color:#fff;box-shadow:none}
+body[data-theme="plugin"] .cbtn.play{border:2px solid #e30613;box-shadow:none}
+body[data-theme="plugin"] .brand{font-weight:900;text-transform:uppercase;letter-spacing:-.02em}
+body[data-theme="plugin"] .brand svg{color:#e30613;filter:none}
+body[data-theme="plugin"] .badge{background:#e30613;color:#fff;box-shadow:none;border-radius:0}
+body[data-theme="plugin"] input[type=range]::-webkit-slider-runnable-track{height:2px}
+body[data-theme="plugin"] input[type=range]::-webkit-slider-thumb{border-radius:0;background:#e30613;box-shadow:none;width:4px;height:10px;margin-top:-4px}

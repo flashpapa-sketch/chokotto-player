@@ -1,0 +1,50 @@
+/* ノクターン・グラス — 深夜の機材を思わせる、静かな青緑の光 */
+body[data-theme="plugin"] {
+  --txt: #e5edf2;
+  --sub: #8296a2;
+  --line: rgba(187, 224, 229, .18);
+  --accent: #75e2d1;
+  --accent-glow: rgba(117, 226, 209, .42);
+  --gold: #f0c77b;
+  --hot: #f0a58b;
+  --ng: #ff8f83;
+  --radius: 7px;
+  --r-sm: 4px;
+  --win-bg: radial-gradient(ellipse at 50% -90%, #315358 0%, transparent 72%), linear-gradient(145deg, #182329, #10171d 66%, #0b1116);
+  --win-border: rgba(176, 219, 217, .3);
+  --card-bg: linear-gradient(145deg, rgba(5, 12, 16, .94), rgba(18, 32, 37, .93));
+  --btn-bg: linear-gradient(180deg, rgba(221, 244, 240, .12), rgba(125, 167, 165, .045));
+  --btn-bg-hover: rgba(117, 226, 209, .17);
+  --play-bg: linear-gradient(180deg, #a1f1df, #53bbaa);
+  --play-ink: #102522;
+  --track-bg: rgba(203, 230, 224, .16);
+  --viz-grad: #347d78, #70c9bb, #c8e8cb;
+  --viz-idle: rgba(117, 226, 209, .15);
+  --font: "Zen Kaku Gothic New", "Yu Gothic UI", sans-serif;
+  --mono: "Space Mono", monospace;
+  --time-font: "Orbitron", "Space Mono", monospace;
+}
+body[data-theme="plugin"] .player { box-shadow: inset 0 1px rgba(255,255,255,.08), 0 5px 18px rgba(0,0,0,.25); }
+body[data-theme="plugin"] .titlebar { background: linear-gradient(180deg, rgba(220,246,240,.09), rgba(220,246,240,.015)); border-bottom: 1px solid rgba(153,211,204,.17); }
+body[data-theme="plugin"] .brand { color: #b8ccc9; letter-spacing: .12em; }
+body[data-theme="plugin"] .brand svg, body[data-theme="plugin"] .logo { color: var(--accent); }
+body[data-theme="plugin"] .menu, body[data-theme="plugin"] .wbtn { color: var(--sub); background: rgba(5,12,16,.5); border-color: var(--line); }
+body[data-theme="plugin"] .display { border-color: rgba(151,199,195,.24); box-shadow: inset 0 1px rgba(255,255,255,.035), 0 1px 3px rgba(0,0,0,.22); }
+body[data-theme="plugin"] .display.lcd { background: linear-gradient(135deg, #080e12, #101b20); }
+body[data-theme="plugin"] .display.info { background: linear-gradient(110deg, #121d22, #17252a); }
+body[data-theme="plugin"] .track { color: #f0f5f3; font-weight: 600; }
+body[data-theme="plugin"] .format-row { color: #b2c4c1; }
+body[data-theme="plugin"] #fmt, body[data-theme="plugin"] #fmt.hr { color: #83d9ca; }
+body[data-theme="plugin"] #fmt.ng { color: var(--ng); }
+body[data-theme="plugin"] #state { color: #9eb2af; }
+body[data-theme="plugin"] .badge { color: #15211f; background: #c6e5bd; border-radius: 2px; }
+body[data-theme="plugin"] #time { color: #9aeee0; text-shadow: 0 0 7px rgba(117,226,209,.25); }
+body[data-theme="plugin"] #dur { color: #829a98; }
+body[data-theme="plugin"] #viz { background: repeating-linear-gradient(90deg, rgba(220,247,240,.04) 0 1px, transparent 1px 5px), #091115; }
+body[data-theme="plugin"] input[type=range]::-webkit-slider-runnable-track { border: 1px solid rgba(185,224,216,.13); }
+body[data-theme="plugin"] input[type=range]::-webkit-slider-thumb { background: #e5f5ef; box-shadow: 0 0 0 1px #438d83, 0 0 5px var(--accent-glow); }
+body[data-theme="plugin"] .cbtn, body[data-theme="plugin"] .sbtn { color: #cfddda; border-color: rgba(185,224,216,.17); box-shadow: inset 0 1px rgba(255,255,255,.055), 0 1px 2px rgba(0,0,0,.24); }
+body[data-theme="plugin"] .cbtn.play { color: var(--play-ink); border-color: rgba(177,246,230,.55); }
+body[data-theme="plugin"] .sbtn.on { color: #0c211e; background: #8edbc9; border-color: #b0f0df; box-shadow: 0 0 7px rgba(117,226,209,.2); }
+body[data-theme="plugin"] #volNum { color: #9eb3ae; }
+

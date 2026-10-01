@@ -1,0 +1,15 @@
+/* ===== 10. y2k: Y2K クローム（液体メタル＋半透明ブルー） ===== */
+body[data-theme="plugin"]{--txt:#0b2a4a;--sub:#3f6b92;--line:rgba(255,255,255,.7);--accent:#0a7cff;--accent-glow:rgba(10,124,255,.5);--gold:#0a7cff;--hot:#0a7cff;--radius:12px;--r-sm:8px;
+ --win-bg:linear-gradient(160deg,#fdfdfd 0%,#c9d2dc 22%,#f7f9fb 38%,#9fb0c2 60%,#e9eef3 80%,#b4c1ce 100%);--win-border:#7d8ea0;
+ --card-bg:linear-gradient(180deg,#4aa6f0,#0b5fc4);--btn-bg:linear-gradient(180deg,#fff,#b9c6d3);--btn-bg-hover:linear-gradient(180deg,#fff,#d8e4f0);--play-bg:radial-gradient(circle at 35% 30%,#bfe6ff,#0a7cff 60%,#044a9c);--play-ink:#fff;
+ --track-bg:rgba(255,255,255,.6);--viz-a:#0a7cff;--viz-b:#bfe6ff;--viz-idle:rgba(10,124,255,.2);--font:"Zen Maru Gothic", "Yu Gothic UI", sans-serif;--mono:"Orbitron", monospace;--time-font:"Orbitron", monospace}
+body[data-theme="plugin"] .display{border:1px solid rgba(255,255,255,.9);box-shadow:inset 0 8px 10px rgba(255,255,255,.55),0 2px 6px rgba(0,40,90,.3)}
+body[data-theme="plugin"] .track,body[data-theme="plugin"] #time,body[data-theme="plugin"] #dur,body[data-theme="plugin"] #state,body[data-theme="plugin"] #fmt{color:#fff;text-shadow:0 1px 1px rgba(0,40,90,.6)}
+body[data-theme="plugin"] .cbtn,body[data-theme="plugin"] .sbtn{color:#20405f;border:1px solid #8b9bab;box-shadow:inset 0 1px 0 #fff,0 1px 2px rgba(0,0,0,.25)}
+body[data-theme="plugin"] .sbtn{border-radius:999px}
+body[data-theme="plugin"] #viz{background:linear-gradient(180deg,rgba(10,60,120,.8),rgba(10,40,90,.9));border-radius:10px}
+body[data-theme="plugin"] .brand{font-style:italic;font-weight:700;color:#20405f}
+body[data-theme="plugin"] .badge{background:linear-gradient(180deg,#fff,#cfe3ff);color:#0a4fb0;box-shadow:0 1px 2px rgba(0,0,0,.3);border-radius:999px}
+
+/* v1.1.1 大きな文字に合わせて、時間が曲の長さと重ならないように */
+body[data-theme="plugin"] .player #time { font-size: 18px !important; line-height: 22px !important; }

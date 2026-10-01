@@ -1,0 +1,14 @@
+/* ===== 1. hifi: 70年代ハイファイ（ウォールナット＋アルミ＋琥珀） ===== */
+body[data-theme="plugin"]{--txt:#f3e6cf;--sub:#b89a74;--line:rgba(0,0,0,.45);--accent:#ffb347;--accent-glow:rgba(255,179,71,.5);--gold:#ffb347;--hot:#ffb347;--radius:6px;--r-sm:3px;
+ --win-bg:repeating-linear-gradient(92deg,rgba(0,0,0,.10) 0 2px,transparent 2px 7px),linear-gradient(180deg,#6b3f22,#3f2312);--win-border:#1e1008;
+ --card-bg:linear-gradient(180deg,#1a1208,#0d0904);--btn-bg:linear-gradient(180deg,#e9e9e6,#a9aaa6);--btn-bg-hover:linear-gradient(180deg,#fff,#c8c9c5);--play-bg:linear-gradient(180deg,#e9e9e6,#a9aaa6);--play-ink:#2a1a0c;
+ --track-bg:#2a1c10;--viz-a:#ff7b1c;--viz-b:#ffe08a;--viz-idle:rgba(255,179,71,.18);--font:"Zen Old Mincho", "Yu Mincho", serif;--mono:"Bebas Neue", "Consolas", monospace;--time-font:"Bebas Neue", sans-serif}
+body[data-theme="plugin"] .display{border:2px solid #0a0603;box-shadow:inset 0 0 12px rgba(255,160,40,.18)}
+body[data-theme="plugin"] .track{color:#ffcf7a;text-shadow:0 0 6px rgba(255,170,60,.6)}
+body[data-theme="plugin"] #time{color:#ffcf7a}
+body[data-theme="plugin"] .cbtn,body[data-theme="plugin"] .sbtn{color:#2a1a0c;border:1px solid #5c5d59;border-radius:3px;box-shadow:0 2px 0 #1e1008}
+body[data-theme="plugin"] .cbtn.play{border-radius:3px;box-shadow:0 2px 0 #1e1008,inset 0 0 0 2px #ff9d2e}
+body[data-theme="plugin"] #viz{background:#0d0904;border:2px solid #0a0603}
+body[data-theme="plugin"] .brand{color:#f3e6cf;font-style:italic;letter-spacing:.06em}
+body[data-theme="plugin"] .badge{background:#ff9d2e;color:#1e1008;box-shadow:none}
+body[data-theme="plugin"]{--btn-ink:#2a1a0c}

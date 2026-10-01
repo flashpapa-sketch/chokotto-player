@@ -1,0 +1,112 @@
+/* =========================================================
+   別窓（CD取り込み・プレイリスト・イコライザ・ヘルプ・動画）に
+   本体と同じスキンの配色を当てる。
+   各窓の元の CSS より後に読み込み、色・書体・角丸だけを上書きする
+   （大きさや配置は各窓の指定のまま）。
+   ========================================================= */
+body[data-theme] {
+  --chassis-a: var(--win-bg-a, #2a2522);
+  --edge-lo: var(--line);
+  --ink: var(--txt);
+  --ink-dim: var(--sub);
+  --lcd-bg: var(--card-solid, #111);
+}
+html body[data-theme], body[data-theme] button, body[data-theme] input, body[data-theme] select, body[data-theme] textarea {
+  font-family: var(--font) !important;
+}
+body[data-theme] { background: #11100f; color: var(--txt); }
+
+/* 窓とタイトルバー */
+body[data-theme] .win, body[data-theme] .wrap {
+  background: var(--win-bg) !important;
+  border: 1px solid var(--win-border) !important;
+  border-radius: var(--radius);
+  color: var(--txt);
+}
+body[data-theme] .win::after { display: none; }
+body[data-theme] .bar {
+  background: transparent !important;
+  border-bottom: 1px solid var(--line) !important;
+  box-shadow: none !important;
+  color: var(--sub) !important;
+  text-shadow: none !important;
+}
+body[data-theme] .bar .name { color: var(--sub); font-weight: 700; letter-spacing: .08em; }
+body[data-theme] .tb {
+  background: var(--btn-bg) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 2px;
+  color: var(--sub) !important;
+}
+body[data-theme] .tb:hover { background: #d9435a !important; color: #fff !important; }
+
+/* 見出し */
+body[data-theme] .head { color: var(--txt); background: transparent; border-color: var(--line); }
+body[data-theme] .head .sub, body[data-theme] .head .ver { color: var(--sub); }
+body[data-theme] .head .title { color: var(--accent); }
+
+/* 一覧（プレイリスト・CD のトラック） */
+body[data-theme] .list, body[data-theme] .body {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--r-sm);
+  box-shadow: none !important;
+}
+body[data-theme] .list::-webkit-scrollbar-track, body[data-theme] .body::-webkit-scrollbar-track { background: transparent !important; }
+body[data-theme] .list::-webkit-scrollbar-thumb, body[data-theme] .body::-webkit-scrollbar-thumb {
+  background: var(--line) !important; border: 0 !important; border-radius: 3px;
+}
+body[data-theme] .row { color: var(--txt) !important; }
+body[data-theme] .row .no, body[data-theme] .row .len, body[data-theme] .row .kind { color: var(--sub); font-family: var(--mono) !important; }
+body[data-theme] .row:hover { background: var(--btn-bg-hover) !important; }
+body[data-theme] .row.cur, body[data-theme] .row.doing { background: var(--accent) !important; color: var(--play-ink, #000) !important; }
+body[data-theme] .row.cur .no, body[data-theme] .row.cur .len, body[data-theme] .row.cur .kind { color: inherit; }
+body[data-theme] .row.ok .st { color: var(--accent) !important; }
+body[data-theme] .row .st { color: var(--sub); }
+body[data-theme] .empty { color: var(--sub) !important; }
+body[data-theme] .count, body[data-theme] .val { color: var(--accent) !important; font-family: var(--mono) !important; }
+
+/* ボタン・選択欄 */
+body[data-theme] .btn, body[data-theme] .sw, body[data-theme] .tab {
+  background: var(--btn-bg) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 3px;
+  color: var(--txt) !important;
+  text-shadow: none !important;
+}
+body[data-theme] .btn:hover:not(:disabled), body[data-theme] .sw:hover, body[data-theme] .tab:hover { background: var(--btn-bg-hover) !important; color: var(--accent) !important; }
+body[data-theme] .btn.go, body[data-theme] .sw.on, body[data-theme] .tab.on {
+  background: var(--play-bg) !important;
+  color: var(--play-ink) !important;
+  border-color: transparent !important;
+}
+body[data-theme] .btn:disabled { opacity: .45; }
+body[data-theme] .sel, body[data-theme] select {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 3px;
+  color: var(--txt) !important;
+}
+body[data-theme] select option { background: #1b1a19; color: #eee; }
+
+/* 進み具合（CD 取り込み） */
+body[data-theme] .prog { background: var(--track-bg) !important; border: 1px solid var(--line) !important; border-radius: 3px; }
+body[data-theme] .prog .fill { background: var(--accent) !important; }
+body[data-theme] .prog .txt { color: var(--txt) !important; text-shadow: 0 1px 1px rgba(0,0,0,.5); }
+
+/* イコライザの目盛り・文字 */
+body[data-theme] .hz { color: var(--sub) !important; }
+body[data-theme] .slot input[type=range]::-webkit-slider-runnable-track { background: var(--track-bg) !important; border: 1px solid var(--line) !important; }
+body[data-theme] .slot input[type=range]::-webkit-slider-thumb { background: var(--accent) !important; border: 1px solid rgba(0,0,0,.4) !important; box-shadow: none !important; }
+
+/* ヘルプ窓の本文 */
+body[data-theme] .body h3 { color: var(--accent); border-color: var(--line); }
+body[data-theme] .note, body[data-theme] .body li, body[data-theme] .kv .v { color: var(--txt); }
+body[data-theme] .kv .k { color: var(--sub); }
+body[data-theme] .warn { color: var(--gold); }
+body[data-theme] code { background: var(--track-bg); color: var(--accent); }
+
+/* 書体が変わって幅が足りなくなるボタンは、折り返さずに詰める */
+body[data-theme] .foot .btn { white-space: nowrap; padding-left: 6px !important; padding-right: 6px !important; }
+body[data-theme] .foot .sel { flex: 1 1 auto; min-width: 0; width: 0; }
+body[data-theme] .foot .btn.go { flex: none; }

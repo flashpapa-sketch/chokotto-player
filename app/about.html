@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<script src="web-api.js"></script>
+<title>ちょこっとplayer について</title>
+<style>
+  :root {
+    --chassis-a: #4a5a69;
+    --chassis-b: #202a34;
+    --edge-lo:   #131a21;
+    --ink:       #dff0fb;
+    --ink-dim:   #8fb2c9;
+    --accent:    #21e065;
+    --lcd-bg:    #06120c;
+    --btn-a:     #55697a;
+    --btn-b:     #2c3a47;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden; user-select: none; cursor: default;
+    font-family: "MS UI Gothic", "ＭＳ Ｐゴシック", sans-serif;
+    background: var(--chassis-b);
+  }
+
+  .win {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    background: linear-gradient(180deg, var(--chassis-a) 0%, #33414e 18%, var(--chassis-b) 100%);
+    border: 1px solid;
+    border-color: #6d7f8f var(--edge-lo) var(--edge-lo) #6d7f8f;
+  }
+
+  .bar {
+    -webkit-app-region: drag;
+    flex: 0 0 17px;
+    display: flex; align-items: center;
+    padding: 0 3px;
+    background: linear-gradient(180deg, #4f88ad 0%, #2b5f80 48%, #17405a 100%);
+    border-bottom: 1px solid var(--edge-lo);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.30);
+    color: var(--ink); font-size: 9px; letter-spacing: .1em;
+    text-shadow: 0 1px 0 rgba(0,0,0,.55);
+  }
+  .bar .name { flex: 1; }
+  .tb {
+    -webkit-app-region: no-drag;
+    width: 13px; height: 12px; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid;
+    border-color: #9fd0ea var(--edge-lo) var(--edge-lo) #9fd0ea;
+    background: linear-gradient(180deg, #5c94b8, #23566f);
+    color: var(--ink); font-size: 9px; cursor: pointer;
+  }
+  .tb:hover { background: linear-gradient(180deg, #c96060, #8c2a2a); }
+
+  /* ---- 見出し ---- */
+  .head {
+    margin: 6px 6px 4px;
+    padding: 7px 9px;
+    background: var(--lcd-bg);
+    border: 1px solid;
+    border-color: var(--edge-lo) #5f7484 #5f7484 var(--edge-lo);
+    box-shadow: inset 0 0 8px rgba(0,0,0,.85);
+    color: var(--accent);
+  }
+  .head .title { font-size: 15px; font-weight: bold; letter-spacing: .04em; }
+  .head .ver   { font-size: 20px; font-variant-numeric: tabular-nums; margin-top: 2px; }
+  .head .sub   { font-size: 11px; opacity: .75; margin-top: 3px; }
+
+  /* ---- 切替タブ ---- */
+  .tabs { display: flex; gap: 2px; margin: 0 6px; }
+  .tab {
+    flex: 1;
+    height: 21px;
+    border: 1px solid;
+    border-color: #8296a6 var(--edge-lo) var(--edge-lo) #8296a6;
+    background: linear-gradient(180deg, var(--btn-a), var(--btn-b));
+    color: var(--ink);
+    font-family: inherit; font-size: 11px;
+    cursor: pointer;
+  }
+  .tab:hover { background: linear-gradient(180deg, #6a8093, #354655); }
+  .tab.on {
+    background: var(--lcd-bg);
+    color: var(--accent);
+    border-color: var(--edge-lo) #5f7484 #5f7484 var(--edge-lo);
+  }
+
+  /* ---- 本文 ---- */
+  .body {
+    flex: 1;
+    margin: 0 6px 4px;
+    padding: 7px 9px;
+    background: var(--lcd-bg);
+    border: 1px solid;
+    border-color: var(--edge-lo) #5f7484 #5f7484 var(--edge-lo);
+    box-shadow: inset 0 0 8px rgba(0,0,0,.85);
+    color: var(--ink);
+    font-size: 12px; line-height: 1.65;
+    overflow-y: auto;
+    user-select: text; cursor: text;
+  }
+  .body::-webkit-scrollbar { width: 11px; }
+  .body::-webkit-scrollbar-track { background: #0a1a12; }
+  .body::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #4a7f9c, #21506a);
+    border: 1px solid;
+    border-color: #7fb6d6 var(--edge-lo) var(--edge-lo) #7fb6d6;
+  }
+
+  .body h3 {
+    font-size: 12px; color: var(--accent);
+    margin: 9px 0 3px; padding-bottom: 2px;
+    border-bottom: 1px solid rgba(33,224,101,.25);
+  }
+  .body h3:first-child { margin-top: 0; }
+
+  /* 項目名と値の2列 */
+  .kv { display: flex; gap: 8px; }
+  .kv .k { flex: 0 0 96px; color: var(--ink-dim); }
+  .kv .v { flex: 1; word-break: break-all; }
+
+  .body ul { margin: 2px 0 0 15px; }
+  .body li { margin-bottom: 1px; }
+  .note { color: var(--ink-dim); font-size: 11px; margin-top: 3px; }
+  .warn { color: #ffcf5a; }
+  code {
+    font-family: Consolas, monospace; font-size: 11px;
+    background: rgba(255,255,255,.07); padding: 0 3px;
+  }
+
+  /* ---- 下段 ---- */
+  .foot {
+    flex: 0 0 auto;
+    display: flex; align-items: center; gap: 3px;
+    padding: 0 6px 6px;
+  }
+  .btn {
+    height: 23px; padding: 0 11px;
+    border: 1px solid;
+    border-color: #8296a6 var(--edge-lo) var(--edge-lo) #8296a6;
+    background: linear-gradient(180deg, var(--btn-a), var(--btn-b));
+    color: var(--ink);
+    font-family: inherit; font-size: 12px;
+    cursor: pointer;
+  }
+  .btn:hover { background: linear-gradient(180deg, #6a8093, #354655); }
+  .btn:active { border-color: var(--edge-lo) #8296a6 #8296a6 var(--edge-lo); }
+  .btn.right { margin-left: auto; }
+</style>
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="skin-vars.css">
+<link rel="stylesheet" id="skinWindowsCss" href="skin-windows.css">
+</head>
+<body data-theme="vintage">
+<div class="win">
+
+  <div class="bar">
+    <span class="name">ちょこっとplayer について</span>
+    <button class="tb" id="close">×</button>
+  </div>
+
+  <div class="head">
+    <div class="title">ちょこっとplayer</div>
+    <div class="ver" id="ver">version —</div>
+    <div class="sub" id="sub">&nbsp;</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" data-p="info">情報</button>
+    <button class="tab"    data-p="use">使い方</button>
+    <button class="tab"    data-p="trouble">困ったとき</button>
+    <button class="tab"    data-p="license">権利表示</button>
+  </div>
+
+  <div class="body" id="body"></div>
+
+  <div class="foot">
+    <button class="btn" id="copy">情報をコピー</button>
+    <button class="btn" id="docs">説明書を開く</button>
+    <button class="btn right" id="ok">閉じる</button>
+  </div>
+
+</div>
+
+<script>
+  const api = window.electronAPI;
+  const bodyEl = document.getElementById('body');
+  let info = null;
+
+  const esc = (s) => String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const row = (k, v) => `<div class="kv"><span class="k">${k}</span><span class="v">${esc(v)}</span></div>`;
+
+  /* ---- 各ページの中身 ---- */
+  const pages = {
+    info: () => `
+      <h3>このソフトについて</h3>
+      ${row('バージョン', info.version)}
+      ${row('作成',       info.company)}
+      ${row('形式',       info.packaged ? 'インストール版 / 単体版' : '開発中のビルド')}
+
+      <h3>動作環境</h3>
+      ${row('OS',       info.os)}
+      ${row('土台',     'Electron ' + info.electron)}
+      ${row('描画',     'Chromium ' + info.chrome)}
+      ${row('内部処理', 'Node.js ' + info.node)}
+
+      <h3>保存先</h3>
+      ${row('本体',   info.exeDir)}
+      ${row('設定',   info.settings)}
+      <div class="note">設定ファイルを削除すると初期状態に戻ります。
+        これ以外にパソコンへ残るものはありません。</div>
+
+      <h3>できること</h3>
+      <ul>
+        <li>動画：MP4 / M4V / WebM / MKV / MOV（8K まで）</li>
+        <li>音楽：MP3 / FLAC / WAV / AAC / M4A / OGG / Opus ほか</li>
+        <li>ハイレゾ音源（24bit / 192kHz）の再生</li>
+        <li>音楽CDの取り込み（FLAC / MP3 / WAV）</li>
+        <li>Winamp クラシックスキン（.wsz）の読み込み</li>
+        <li>10バンドのイコライザ、プレイリスト</li>
+      </ul>`,
+
+    use: () => `
+      <h3>基本の操作</h3>
+      <ul>
+        <li>左上の「ファイル」にカーソルを合わせるとメニューが出ます</li>
+        <li>複数のファイルを選ぶとプレイリストになります</li>
+        <li>EXE にファイルをドラッグしても再生できます</li>
+      </ul>
+
+      <h3>ショートカット</h3>
+      ${row('Ctrl + O', 'ファイルを開く')}
+      ${row('Space',    '再生 / 一時停止')}
+      ${row('Alt + F4', '終了')}
+      <div class="note">映像ウィンドウでは、ダブルクリックで全画面、
+        Esc で解除、Space で再生・一時停止です。</div>
+
+      <h3>音楽CDの取り込み</h3>
+      <ul>
+        <li>「曲名取得」で曲名・アーティスト・アルバムを取得します</li>
+        <li>形式は FLAC / MP3（320k・可変・192k・128k）/ WAV から選べます</li>
+        <li>取得した情報はファイルのタグに書き込まれます</li>
+      </ul>
+      <div class="note">曲名の取得は、ディスクの配置から作った識別子を
+        MusicBrainz へ送って照会します。氏名などは送信しません。
+        ボタンを押したときだけ通信します。</div>
+
+      <h3>ハイレゾ音源</h3>
+      <div class="note">通常はスペクトラム表示のため 48kHz に変換されます。
+        原音のまま出力するには「オプション」→「ハイレゾ優先」を
+        有効にしてください（スペクトラム表示は止まります）。</div>`,
+
+    trouble: () => `
+      <h3><span class="warn">起動時に警告が出る</span></h3>
+      <div>「Windows によって PC が保護されました」と出た場合、
+        <b>詳細情報</b> → <b>実行</b> で起動できます。</div>
+      <div class="note">署名証明書のない個人作成のソフトすべてに出るもので、
+        中身は関係ありません。2回目以降は表示されません。</div>
+
+      <h3><span class="warn">CD取り込みだけ動かない</span></h3>
+      <div>ウイルス対策ソフトが <code>ckcd.exe</code> を隔離した可能性があります。</div>
+      <div class="note">音楽CDには通常のファイルが無く、取り出すにはドライブへ
+        直接命令を出す必要があります。この動作がランサムウェア等と
+        形の上で区別できないため、推定による検知を受けることがあります。
+        読み取り専用で動作し、書き込みは一切行いません。<br>
+        対処：ウイルス対策ソフトの除外設定に、下記のフォルダを追加してください。</div>
+      ${row('場所', info ? info.exeDir : '')}
+
+      <h3>動画が再生できない</h3>
+      <div class="note">AVI / FLV / WMV / AIFF には対応していません。
+        MP4 などに変換してご利用ください。<br>
+        同じ MP4 でも、中の映像・音声の種類によっては再生できないことがあります。</div>
+
+      <h3>8K が滑らかに再生されない</h3>
+      <div class="note">H.264 の 8K は GPU の支援が効かず、CPU の負担が非常に
+        大きくなります。HEVC・AV1・VP9 で収録された映像を推奨します。</div>
+
+      <h3>不具合を調べる</h3>
+      <div class="note">下記を付けて起動すると、調査用の記録が
+        <code>%TEMP%\\ck-debug.log</code> に残ります。</div>
+      ${row('引数', '--ck-debug')}`,
+
+    license: () => `
+      <h3>使用している第三者ソフトウェア</h3>
+      <ul>
+        <li><b>Electron / Chromium</b> — MIT、BSD 3-Clause ほか</li>
+        <li><b>Node.js</b> — MIT</li>
+        <li><b>libFLAC</b> — BSD 3-Clause（Xiph.Org）<br>
+          <span class="note">FLAC への変換に使用。GPL である flac.exe は同梱していません。</span></li>
+        <li><b>libmp3lame（LAME）</b> — LGPL v2.1+<br>
+          <span class="note">MP3 への変換に使用。動的リンクのため差し替え可能です。</span></li>
+      </ul>
+      <div class="note">全文は、インストール先の <code>resources</code> フォルダ内
+        および <code>docs</code> フォルダ内の各ファイルをご覧ください。</div>
+
+      <h3>音楽データベース</h3>
+      <div class="note">曲名の取得に MusicBrainz を利用しています。
+        提供されるデータは Creative Commons CC0 です。</div>
+
+      <h3>Winamp スキンについて</h3>
+      <div class="note">クラシックスキン形式（.wsz）の読み込みに対応していますが、
+        Winamp の名称・ロゴ・画像素材は使用しておらず、
+        開発元および権利者とは無関係です。</div>
+
+      <h3>ご利用にあたって</h3>
+      <div class="note">音楽CDの取り込みは、ご自身が正当に所有するディスクを
+        私的使用の範囲で複製するための機能です。
+        権利者の許諾なく複製物を配布・公開することは法律で禁じられています。</div>`,
+  };
+
+  let cur = 'info';
+  function render() {
+    bodyEl.innerHTML = info ? pages[cur]() : '読み込み中…';
+    bodyEl.scrollTop = 0;
+  }
+
+  document.querySelectorAll('.tab').forEach((t) => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach((x) => x.classList.remove('on'));
+      t.classList.add('on');
+      cur = t.dataset.p;
+      render();
+    });
+  });
+
+  api.appInfo().then((i) => {
+    info = i;
+    document.getElementById('ver').textContent = 'version ' + i.version;
+    document.getElementById('sub').textContent = i.company;
+    render();
+  }).catch(() => { bodyEl.textContent = '情報を取得できませんでした。'; });
+
+  /* 不具合を報告するとき、環境をまとめて貼れるようにする */
+  document.getElementById('copy').onclick = () => {
+    if (!info) return;
+    const txt = [
+      'ちょこっとplayer ' + info.version,
+      'OS       : ' + info.os,
+      'Electron : ' + info.electron,
+      'Chromium : ' + info.chrome,
+      'Node.js  : ' + info.node,
+      '本体     : ' + info.exeDir,
+      '設定     : ' + info.settings,
+    ].join('\n');
+    api.copyText(txt);
+    const b = document.getElementById('copy');
+    b.textContent = 'コピーしました';
+    setTimeout(() => { b.textContent = '情報をコピー'; }, 1600);
+  };
+
+  document.getElementById('docs').onclick = () => api.openDocs();
+  document.getElementById('ok').onclick    = () => api.close();
+  document.getElementById('close').onclick = () => api.close();
+  window.addEventListener('keydown', (e) => { if (e.key === 'Escape') api.close(); });
+</script>
+<script src="skin-apply.js"></script>
+</body>
+</html>

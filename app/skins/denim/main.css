@@ -1,0 +1,14 @@
+/* ===== 9. denim: デニム＆レザー（アメカジ、オレンジステッチ） ===== */
+body[data-theme="plugin"]{--txt:#f3ead8;--sub:#c9d3e6;--line:rgba(255,255,255,.2);--accent:#f0a030;--accent-glow:rgba(0,0,0,0);--gold:#f0a030;--hot:#f0a030;--radius:8px;--r-sm:6px;
+ --win-bg:repeating-linear-gradient(45deg,rgba(255,255,255,.05) 0 1px,transparent 1px 3px),repeating-linear-gradient(-45deg,rgba(0,0,0,.12) 0 1px,transparent 1px 3px),linear-gradient(180deg,#34507a,#1f3354);
+ --win-border:#16243d;--card-bg:linear-gradient(180deg,#7a4a26,#5a3319);--btn-bg:linear-gradient(180deg,#8a5a34,#5a3319);--btn-bg-hover:linear-gradient(180deg,#9c6a40,#6b3f20);--play-bg:linear-gradient(180deg,#d9a24a,#a86d1e);--play-ink:#2a1606;
+ --track-bg:rgba(0,0,0,.35);--viz-a:#f0a030;--viz-b:#ffe2a8;--viz-idle:rgba(240,160,48,.2);--font:"Zen Kaku Gothic New", "Yu Gothic UI", sans-serif;--mono:"Bebas Neue", monospace;--time-font:"Bebas Neue", sans-serif}
+body[data-theme="plugin"] .player{outline:1.5px dashed #f0a030;outline-offset:-5px}
+body[data-theme="plugin"] .display{border:1.5px dashed #f0c070;box-shadow:0 2px 0 #2a1606}
+body[data-theme="plugin"] .cbtn,body[data-theme="plugin"] .sbtn{color:#f3ead8;border:1.5px dashed #f0c070;box-shadow:0 2px 0 #16243d}
+body[data-theme="plugin"] .cbtn.play{border:1.5px dashed #5a3319}
+body[data-theme="plugin"] #viz{background:rgba(0,0,0,.3);border:1.5px dashed #f0a030}
+body[data-theme="plugin"] .brand{font-weight:900;letter-spacing:.1em;text-transform:uppercase}
+body[data-theme="plugin"] .badge{background:#f0a030;color:#2a1606;box-shadow:none}
+body[data-theme="plugin"] .player{outline-offset:-3px}
+body[data-theme="plugin"] #viz{border:0}

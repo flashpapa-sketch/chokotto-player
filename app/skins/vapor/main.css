@@ -1,0 +1,12 @@
+/* ===== 4. vapor: ヴェイパーウェイヴ（夕焼けグラデ＋グリッド） ===== */
+body[data-theme="plugin"]{--txt:#fff;--sub:#ffd1f3;--line:rgba(255,255,255,.35);--accent:#00f0ff;--accent-glow:rgba(0,240,255,.6);--gold:#fff35c;--hot:#ff4fd8;--radius:0;--r-sm:0;
+ --win-bg:linear-gradient(transparent 60%,rgba(0,240,255,.35) 60% 61%,transparent 61%) 0 0/100% 100%,linear-gradient(180deg,#2b1055 0%,#7597de 45%,#ff6ec4 75%,#ffd36e 100%);
+ --win-border:#ff4fd8;--card-bg:rgba(20,0,50,.55);--btn-bg:rgba(20,0,50,.5);--btn-bg-hover:rgba(255,79,216,.45);--play-bg:linear-gradient(180deg,#ff4fd8,#8a2be2);--play-ink:#fff;
+ --track-bg:rgba(255,255,255,.3);--viz-a:#ff4fd8;--viz-b:#00f0ff;--viz-idle:rgba(255,255,255,.2);--font:"Dela Gothic One", "Yu Gothic UI", sans-serif;--mono:"Orbitron", monospace;--time-font:"Orbitron", monospace}
+body[data-theme="plugin"] .track{font-style:italic;text-shadow:1px 1px 0 #ff4fd8}
+body[data-theme="plugin"] .brand{font-style:italic;letter-spacing:.1em;color:#fff;text-shadow:1px 1px 0 #ff4fd8}
+body[data-theme="plugin"] #viz{background:rgba(20,0,50,.5)}
+body[data-theme="plugin"] .badge{background:#fff35c;color:#2b1055;box-shadow:3px 3px 0 #ff4fd8;border-radius:0}
+
+/* v1.1.1 大きな文字に合わせて、時間が曲の長さと重ならないように */
+body[data-theme="plugin"] .player #time { font-size: 18px !important; line-height: 22px !important; }

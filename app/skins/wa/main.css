@@ -1,0 +1,18 @@
+/* ===== 8. wa: 和（藍染め＋朱、青海波） ===== */
+body[data-theme="plugin"]{--txt:#f4eee1;--sub:#a9b4c9;--line:rgba(244,238,225,.25);--accent:#e8503a;--accent-glow:rgba(0,0,0,0);--gold:#e8503a;--hot:#e8503a;--radius:2px;--r-sm:2px;
+ --win-bg:radial-gradient(circle at 50% 100%,transparent 55%,rgba(255,255,255,.07) 56% 60%,transparent 61%) 0 0/20px 10px,radial-gradient(circle at 0 50%,transparent 55%,rgba(255,255,255,.07) 56% 60%,transparent 61%) 10px 5px/20px 10px,#1d2d50;
+ --win-border:#0e1830;--card-bg:#f4eee1;--btn-bg:#f4eee1;--btn-bg-hover:#fff;--play-bg:#e8503a;--play-ink:#fff;--track-bg:rgba(29,45,80,.25);
+ --viz-a:#1d2d50;--viz-b:#e8503a;--viz-idle:rgba(29,45,80,.15);--font:"Zen Old Mincho", "Yu Mincho", serif;--mono:"Zen Old Mincho", serif;--time-font:"Zen Old Mincho", serif}
+body[data-theme="plugin"] .display{color:#1d2d50;border:0;box-shadow:3px 3px 0 #e8503a}
+body[data-theme="plugin"] .track{color:#1d2d50;font-weight:700}
+body[data-theme="plugin"] #time,body[data-theme="plugin"] #dur,body[data-theme="plugin"] #state{color:#1d2d50}
+body[data-theme="plugin"] #fmt{color:#e8503a}
+body[data-theme="plugin"] .cbtn,body[data-theme="plugin"] .sbtn{color:#1d2d50;border:0;box-shadow:none}
+body[data-theme="plugin"] .cbtn.play{border-radius:50%;box-shadow:0 0 0 2px #f4eee1}
+body[data-theme="plugin"] #viz{background:#f4eee1}
+body[data-theme="plugin"] .brand{font-weight:700;letter-spacing:.2em}
+body[data-theme="plugin"] .brand svg{color:#e8503a;filter:none}
+body[data-theme="plugin"] .badge{background:#e8503a;color:#fff;box-shadow:none;border-radius:2px}
+body[data-theme="plugin"] .vol-ico,body[data-theme="plugin"] #volNum{color:#f4eee1}
+body[data-theme="plugin"]{--btn-ink:#1d2d50}
+body[data-theme="plugin"] .display{box-shadow:2px 2px 0 #e8503a}

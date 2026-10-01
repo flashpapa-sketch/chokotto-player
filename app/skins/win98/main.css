@@ -1,0 +1,20 @@
+/* ===== 5. win98: Windows 98 風（灰色の立体ボタン） ===== */
+body[data-theme="plugin"]{--txt:#000;--sub:#404040;--line:#808080;--accent:#000080;--accent-glow:rgba(0,0,0,0);--gold:#000080;--hot:#000080;--radius:0;--r-sm:0;
+ --win-bg:#c0c0c0;--win-border:#000;--card-bg:#000;--btn-bg:#c0c0c0;--btn-bg-hover:#d4d0c8;--play-bg:#c0c0c0;--play-ink:#000;--track-bg:#fff;
+ --viz-a:#00a800;--viz-m:#ffff00;--viz-b:#ff0000;--viz-idle:rgba(0,168,0,.25);--font:"DotGothic16", "MS UI Gothic", sans-serif;--mono:"DotGothic16", monospace;--time-font:"DotGothic16", monospace}
+body[data-theme="plugin"] .player{border:2px outset #dfdfdf}
+body[data-theme="plugin"] .titlebar{background:linear-gradient(90deg,#000080,#1084d0)}
+body[data-theme="plugin"] .brand,body[data-theme="plugin"] .brand svg{color:#fff;filter:none;font-weight:700}
+body[data-theme="plugin"] .wbtn{background:#c0c0c0;border:1px outset #fff;border-radius:0;color:#000}
+body[data-theme="plugin"] .menu{background:#c0c0c0;border:2px outset #fff;border-radius:0;color:#000}
+body[data-theme="plugin"] .display{border:2px inset #fff;color:#0f0}
+body[data-theme="plugin"] .track,body[data-theme="plugin"] #time,body[data-theme="plugin"] #fmt{color:#00ff00;font-family:"Consolas",monospace}
+body[data-theme="plugin"] #state,body[data-theme="plugin"] #dur{color:#00c000}
+body[data-theme="plugin"] .cbtn,body[data-theme="plugin"] .sbtn{border:2px outset #fff;border-radius:0;box-shadow:none}
+body[data-theme="plugin"] .cbtn:active,body[data-theme="plugin"] .sbtn:active{border-style:inset}
+body[data-theme="plugin"] #viz{background:#000;border:2px inset #fff}
+body[data-theme="plugin"] .badge{background:#000080;color:#fff;box-shadow:none;border-radius:0}
+body[data-theme="plugin"] input[type=range]::-webkit-slider-thumb{border-radius:0;background:#c0c0c0;box-shadow:none;border:1px outset #fff;width:7px;height:10px;margin-top:-3px}
+
+/* v1.1.1 大きな文字に合わせて、時間が曲の長さと重ならないように */
+body[data-theme="plugin"] .player #time { font-size: 18px !important; line-height: 22px !important; }

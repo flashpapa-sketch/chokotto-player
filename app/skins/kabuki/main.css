@@ -1,0 +1,17 @@
+/* ===== 7. kabuki: 歌舞伎町ネオン（黒＋ピンクと青のネオン管） ===== */
+body[data-theme="plugin"]{--txt:#ffe6f7;--sub:#8e6aa0;--line:rgba(255,64,160,.4);--accent:#ff3fa4;--accent-glow:rgba(255,63,164,.8);--gold:#3fd0ff;--hot:#3fd0ff;--radius:6px;--r-sm:4px;
+ --win-bg:radial-gradient(80% 60% at 20% 0%,rgba(255,63,164,.18),transparent 60%),radial-gradient(80% 60% at 100% 100%,rgba(63,208,255,.15),transparent 60%),#07030d;
+ --win-border:#ff3fa4;--card-bg:rgba(0,0,0,.6);--btn-bg:transparent;--btn-bg-hover:rgba(255,63,164,.15);--play-bg:transparent;--play-ink:#3fd0ff;--track-bg:rgba(255,255,255,.12);
+ --viz-a:#ff3fa4;--viz-b:#3fd0ff;--viz-idle:rgba(255,63,164,.15);--font:"Dela Gothic One", "Yu Gothic UI", sans-serif;--mono:"Space Mono", monospace;--time-font:"Dela Gothic One", sans-serif}
+body[data-theme="plugin"] .player{box-shadow:inset 0 0 14px rgba(255,63,164,.5),0 0 0 1px #3fd0ff}
+body[data-theme="plugin"] .track{color:#fff;font-weight:700;text-shadow:0 0 3px #ff3fa4,0 0 6px #ff3fa4}
+body[data-theme="plugin"] .brand{color:#3fd0ff;text-shadow:0 0 4px #3fd0ff;font-weight:700}
+body[data-theme="plugin"] .cbtn,body[data-theme="plugin"] .sbtn{border:1.5px solid #ff3fa4;color:#ffd0ea;box-shadow:0 0 6px rgba(255,63,164,.7),inset 0 0 6px rgba(255,63,164,.5)}
+body[data-theme="plugin"] .cbtn.play{border-color:#3fd0ff;box-shadow:0 0 8px #3fd0ff,inset 0 0 8px rgba(63,208,255,.6)}
+body[data-theme="plugin"] .badge{background:transparent;color:#3fd0ff;border:1px solid #3fd0ff;box-shadow:0 0 8px #3fd0ff;text-shadow:0 0 4px #3fd0ff}
+body[data-theme="plugin"] #fmt{color:#ff9bd0}
+body[data-theme="plugin"] .menu{color:#ff9bd0;border-color:#ff3fa4}
+body[data-theme="plugin"] #time{color:#fff;text-shadow:0 0 4px #ff3fa4,0 0 8px #ff3fa4}
+
+/* v1.1.1 大きな文字に合わせて、時間が曲の長さと重ならないように */
+body[data-theme="plugin"] .player #time { font-size: 18px !important; line-height: 22px !important; }

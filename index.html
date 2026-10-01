@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>chokotto-player</title>
+<meta name="description" content="ハイレゾ対応の小さな音楽・動画プレイヤー（ブラウザ版）">
+<meta name="theme-color" content="#161514">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="chokotto">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="app/fonts.css">
+<style>
+  :root { --bg: #161514; --ink: #e9ddcf; --sub: #9a8d80; --acc: #ff9c55; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; background: radial-gradient(120% 80% at 50% 0%, #2a2623 0%, var(--bg) 60%) fixed; color: var(--ink);
+    font-family: "Zen Kaku Gothic New", -apple-system, "Hiragino Sans", sans-serif; -webkit-text-size-adjust: 100%; }
+  body { padding: max(12px, env(safe-area-inset-top)) 12px max(16px, env(safe-area-inset-bottom)); display: flex; flex-direction: column; align-items: center; gap: 14px;
+    -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+  #dock { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .fr { position: relative; overflow: hidden; border-radius: 6px; box-shadow: 0 14px 40px rgba(0,0,0,.5), 0 2px 6px rgba(0,0,0,.35); background: #111; }
+  .fr[hidden] { display: none; }
+  .fr iframe { position: absolute; left: 0; top: 0; border: 0; transform-origin: 0 0; display: block; background: transparent; }
+  #modal { position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; background: rgba(8,8,8,.55);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+  #modal[hidden], #video[hidden] { display: none; }
+  #video { width: 100%; display: flex; justify-content: center; }
+  #video.full { position: fixed; inset: 0; z-index: 30; background: #000; align-items: center; }
+  #video.full .fr { border-radius: 0; box-shadow: none; }
+  #menu { position: absolute; z-index: 40; min-width: 210px; padding: 6px; border-radius: 12px; background: rgba(38,35,32,.96);
+    box-shadow: 0 12px 36px rgba(0,0,0,.55); border: 1px solid rgba(255,228,200,.12); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+  #menu[hidden] { display: none; }
+  #menu button { display: flex; width: 100%; align-items: center; gap: 10px; padding: 12px 14px; border: 0; border-radius: 8px; background: none;
+    color: var(--ink); font: inherit; font-size: 16px; text-align: left; cursor: pointer; }
+  #menu button:active, #menu button:hover { background: rgba(255,156,85,.16); color: #fff; }
+  #menu hr { border: 0; border-top: 1px solid rgba(255,228,200,.12); margin: 4px 6px; }
+  .hint { max-width: 560px; text-align: center; font-size: 13px; line-height: 1.8; color: var(--sub); opacity: 0; transition: opacity .4s; }
+  body.ready .hint { opacity: 1; }
+  .hint b { color: var(--ink); font-weight: 700; }
+  .hint .add { display: inline-block; }
+  body.standalone .hint .add { display: none; }
+  .foot { margin-top: auto; font-size: 11px; color: #6f655b; letter-spacing: .08em; }
+  .foot a { color: inherit; }
+</style>
+</head>
+<body>
+  <div id="video" hidden></div>
+  <main id="dock" aria-label="chokotto-player"></main>
+  <p class="hint">
+    <b>⏏</b> ボタンか <b>File</b> から曲を選んでください。曲はこの端末の中だけで再生され、どこにも送られません。<br>
+    <span class="add">Safari の共有ボタン（□↑）→「ホーム画面に追加」で、アプリのように使えます。</span>
+  </p>
+  <div class="foot">chokotto-player 1.1.1 ・ <a href="https://github.com/flashpapa-sketch/chokotto-player/releases/tag/v1.1.1">Windows / Mac 版</a></div>
+  <div id="modal" hidden></div>
+  <div id="menu" hidden role="menu">
+    <button data-cmd="open-files">⏏&nbsp; ファイルを開く…</button>
+    <hr>
+    <button data-cmd="play">▶&nbsp; 再生</button>
+    <button data-cmd="pause">❙❙&nbsp; 一時停止</button>
+    <button data-cmd="stop">■&nbsp; 停止</button>
+    <button data-cmd="prev">⏮&nbsp; 前の曲</button>
+    <button data-cmd="next">⏭&nbsp; 次の曲</button>
+    <hr>
+    <button data-cmd="options">⚙&nbsp; オプション</button>
+    <button data-cmd="about">?&nbsp; ヘルプ</button>
+  </div>
+  <script src="ck-meta.js"></script>
+  <script src="shell.js"></script>
+</body>
+</html>
