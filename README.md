@@ -20,6 +20,7 @@
 - 見た目は 20 種類（標準はシグナル・オレンジ）。スキンのフォルダに CSS を置けば自作スキンも追加可能。プレイリスト・イコライザ・CD取り込みの窓も同じ見た目になります
 - 懐かしの `.wsz` クラシックスキンの読み込みに対応。本体の大きさも 275×116
 - 10 バンドのイコライザ、プレイリスト
+- エクスプローラーの右クリックに「ちょこっとPLAYERで開く」（複数選ぶとまとめてプレイリストに）
 - タグから「アーティスト - 曲名」を表示。足りない曲名だけネットで補う機能つき（既定はオフ）
 - 勝手に通信しない。履歴を残さない
 
@@ -33,8 +34,8 @@
 ## ファイルの確認（SHA-256）
 
 ```
-569481e4fdc37f46b16eeed95a130d41bb9ff07ec100adfbbfae9e855aaeb013  chokotto-player-1.1.1-setup.exe
-23eefec3ef90c8a51b596273398e0aae6c46546fd0d8c1d3db4ee6d0304eeae0  chokotto-player-1.1.1-portable.zip
+99e8fca62a285960e1fd46cd98816104ddbef30c0012ea5652fa79fcc79ca001  chokotto-player-1.1.1-setup.exe
+d75f12a26d8d50f3a5f82b6f6235d71c86c040f04f51e42037cf6e81a2b1d23e  chokotto-player-1.1.1-portable.zip
 ```
 
 PowerShell で `Get-FileHash .\ファイル名` と打つと確かめられます。
