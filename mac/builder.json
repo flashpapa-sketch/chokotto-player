@@ -1,0 +1,19 @@
+{
+  "appId": "com.chokotto.player",
+  "productName": "ちょこっとplayer",
+  "electronVersion": "43.2.0",
+  "directories": { "app": "app", "output": "out" },
+  "mac": {
+    "target": [{ "target": "dir", "arch": ["universal"] }],
+    "icon": "icon.png",
+    "category": "public.app-category.music",
+    "identity": null,
+    "hardenedRuntime": false,
+    "extendInfo": { "NSRequiresAquaSystemAppearance": false }
+  },
+  "fileAssociations": [
+    { "ext": ["mp3", "flac", "wav", "aac", "m4a", "ogg", "opus", "mka", "weba"], "name": "Audio", "role": "Viewer", "rank": "Alternate" },
+    { "ext": ["mp4", "m4v", "webm", "mkv", "mov"], "name": "Video", "role": "Viewer", "rank": "Alternate" }
+  ],
+  "publish": null
+}

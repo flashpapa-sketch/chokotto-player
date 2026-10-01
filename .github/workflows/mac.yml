@@ -1,0 +1,70 @@
+name: build-mac
+on:
+  push:
+    branches: [mac-v1.1.1]
+permissions:
+  contents: write
+jobs:
+  mac:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Unpack app
+        working-directory: mac
+        run: |
+          npx --yes @electron/asar extract app.asar app
+          ls app
+      - name: Build .app (universal)
+        working-directory: mac
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+        run: |
+          npm init -y >/dev/null
+          npm i -D electron-builder@25.1.8 >/dev/null
+          npx electron-builder --mac --universal -c builder.json
+          ls -R out | head -20
+      - name: Ad-hoc sign
+        working-directory: mac
+        run: |
+          APP="$(ls -d out/mac-universal/*.app)"
+          codesign --force --deep --sign - "$APP"
+          codesign --verify --deep --strict "$APP" && echo signed-ok
+          lipo -archs "$APP/Contents/MacOS/"* 
+      - name: Smoke test (starts and keeps running)
+        working-directory: mac
+        run: |
+          APP="$(ls -d out/mac-universal/*.app)"
+          BIN="$(ls "$APP/Contents/MacOS/"* | head -1)"
+          "$BIN" > run.log 2>&1 &
+          PID=$!
+          sleep 20
+          if kill -0 $PID 2>/dev/null; then echo "RUNNING-OK"; else echo "DIED"; cat run.log; exit 1; fi
+          screencapture -x shot.png || true
+          kill $PID || true
+          sleep 2
+          tail -20 run.log || true
+          ls ~/Library/Application\ Support/chokotto-player || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mac-shot
+          path: |
+            mac/shot.png
+            mac/run.log
+      - name: Make dmg
+        working-directory: mac
+        run: |
+          APP="$(ls -d out/mac-universal/*.app)"
+          mkdir dmgroot
+          cp -R "$APP" dmgroot/
+          ln -s /Applications dmgroot/Applications
+          hdiutil create -volname "chokotto-player" -srcfolder dmgroot -ov -format UDZO chokotto-player-1.1.1-mac.dmg
+          shasum -a 256 chokotto-player-1.1.1-mac.dmg
+      - name: Upload to release v1.1.1
+        working-directory: mac
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload v1.1.1 chokotto-player-1.1.1-mac.dmg --repo "$GITHUB_REPOSITORY" --clobber
