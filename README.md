@@ -44,9 +44,11 @@ Apple の署名がないため「開発元を確認できません」と出る�
 ```
 99e8fca62a285960e1fd46cd98816104ddbef30c0012ea5652fa79fcc79ca001  chokotto-player-1.1.1-setup.exe
 d75f12a26d8d50f3a5f82b6f6235d71c86c040f04f51e42037cf6e81a2b1d23e  chokotto-player-1.1.1-portable.zip
+c41f18ebb7143c2a87d9f4c24fb4e64ec648c5dbf1a150095bf0151fc68ace9d  chokotto-player-1.1.1-mac.dmg
 ```
 
 PowerShell で `Get-FileHash .\ファイル名` と打つと確かめられます。
+Mac はターミナルで `shasum -a 256 ファイル名` と打つと確かめられます。
 
 ## ライセンスについて
 
