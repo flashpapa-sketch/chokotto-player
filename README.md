@@ -10,9 +10,9 @@
 
 | ファイル | 内容 |
 |---|---|
-| `chokotto-player-1.1.1-setup.exe` | インストーラー版 |
-| `chokotto-player-1.1.1-portable.zip` | インストール不要版（展開してすぐ使える） |
-| `chokotto-player-1.1.1-mac.dmg` | Mac 版（Intel・Apple シリコン両対応）。CD 取り込みと右クリックメニューは Windows のみ |
+| `chokotto-player-1.1.2-setup.exe` | インストーラー版 |
+| `chokotto-player-1.1.2-portable.zip` | インストール不要版（展開してすぐ使える） |
+| `chokotto-player-1.1.2-mac.dmg` | Mac 版（Intel・Apple シリコン両対応）。CD 取り込みと右クリックメニューは Windows のみ |
 
 **iPad・スマホ・Mac のブラウザ版**：https://flashpapa-sketch.github.io/chokotto-player/ （Safari の共有ボタン →「ホーム画面に追加」でアプリのように使えます）
 
@@ -42,9 +42,9 @@ Apple の署名がないため「開発元を確認できません」と出る�
 ## ファイルの確認（SHA-256）
 
 ```
-99e8fca62a285960e1fd46cd98816104ddbef30c0012ea5652fa79fcc79ca001  chokotto-player-1.1.1-setup.exe
-d75f12a26d8d50f3a5f82b6f6235d71c86c040f04f51e42037cf6e81a2b1d23e  chokotto-player-1.1.1-portable.zip
-c41f18ebb7143c2a87d9f4c24fb4e64ec648c5dbf1a150095bf0151fc68ace9d  chokotto-player-1.1.1-mac.dmg
+64fcb984e6ca065c1066afeb45b9f63ba16549625332c75168e7def1d1cc2363  chokotto-player-1.1.2-setup.exe
+59eb49ecaa0d614620322b48ee11c3ad57d7f7421c63c7e99a05cd48dff3b1f0  chokotto-player-1.1.2-portable.zip
+7a7ac15cba6eba0ff5c6fefa72f7376e7947d3d09f1c549e0629de960e6f1438  chokotto-player-1.1.2-mac.dmg
 ```
 
 PowerShell で `Get-FileHash .\ファイル名` と打つと確かめられます。
