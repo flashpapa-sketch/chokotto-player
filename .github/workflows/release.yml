@@ -58,11 +58,25 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $ErrorActionPreference = 'Stop'
-          $u = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\c0cee8b4-0b13-5e21-ada4-8e9539f14ea8'
+          $id = 'c0cee8b4-0b13-5e21-ada4-8e9539f14ea8'
+          $hives = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\$id", "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\$id"
+          # インストーラーは子プロセスに引き継いで先に終わることがあるので、登録を待つ
+          function Wait-Ver($want) {
+            for ($i = 0; $i -lt 90; $i++) {
+              foreach ($h in $hives) { if (Test-Path $h) { $v = (Get-ItemProperty $h).DisplayVersion; if ($v -eq $want) { return $h } } }
+              Start-Sleep 2
+            }
+            throw "not installed: $want"
+          }
+          # 先の試験でアプリが登録した右クリックメニューを消し、インストーラー自身が書くかを見る
+          Remove-Item -Recurse -Force 'HKCU:\Software\Classes\SystemFileAssociations\.flac\shell\ChokottoPlayer' -ErrorAction SilentlyContinue
           gh release download v1.1.1 --repo $env:GITHUB_REPOSITORY -p '*setup.exe' -D old
-          Start-Process -Wait -FilePath (Get-ChildItem old\*.exe).FullName -ArgumentList '/S'
-          "after 1.1.1: " + (Get-ItemProperty $u).DisplayVersion
-          Start-Process -Wait -FilePath "build\out\chokotto-player-$env:VER-setup.exe" -ArgumentList '/S'
+          Start-Process -Wait -FilePath (Get-ChildItem old\*.exe).FullName -ArgumentList '/S', '/currentuser'
+          $u = Wait-Ver '1.1.1'
+          "after 1.1.1: $u"
+          Start-Process -Wait -FilePath "build\out\chokotto-player-$env:VER-setup.exe" -ArgumentList '/S', '/currentuser'
+          $u = Wait-Ver $env:VER
+          Start-Sleep 5
           $p = Get-ItemProperty $u
           "after 1.1.2: " + $p.DisplayVersion + " / " + $p.InstallLocation
           if ($p.DisplayVersion -ne $env:VER) { throw 'version not updated' }
@@ -72,12 +86,12 @@ jobs:
           if (-not (Test-Path (Join-Path $p.InstallLocation 'resources\ckcd.exe'))) { throw 'ckcd.exe missing' }
           $ctx = 'HKCU:\Software\Classes\SystemFileAssociations\.flac\shell\ChokottoPlayer\command'
           "menu: " + (Get-ItemProperty $ctx).'(default)'
-          $n = (Get-ChildItem 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall' | Where-Object { (Get-ItemProperty $_.PSPath).DisplayName -like '*player*' }).Count
+          $n = (Get-ChildItem 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall', 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall' | Where-Object { (Get-ItemProperty $_.PSPath).DisplayName -like '*player*' }).Count
           "uninstall entries: $n"
           if ($n -ne 1) { throw 'duplicate install entries' }
           $q = $p.QuietUninstallString
           Start-Process -Wait -FilePath 'cmd.exe' -ArgumentList "/c $q"
-          Start-Sleep 3
+          for ($i = 0; $i -lt 60 -and (Test-Path $u); $i++) { Start-Sleep 2 }
           if (Test-Path $u) { throw 'uninstall key left' }
           if (Test-Path $ctx) { throw 'right-click menu left' }
           'uninstall OK'
