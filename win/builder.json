@@ -1,0 +1,46 @@
+{
+  "appId": "com.chokotto.player",
+  "productName": "ちょこっとplayer",
+  "electronVersion": "43.8.3",
+  "directories": {
+    "app": "app",
+    "output": "out",
+    "buildResources": "res"
+  },
+  "electronLanguages": [
+    "ja",
+    "en-US"
+  ],
+  "extraResources": [
+    {
+      "from": "win-res",
+      "to": "."
+    }
+  ],
+  "extraFiles": [
+    {
+      "from": "win-root",
+      "to": "."
+    }
+  ],
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": [
+          "x64"
+        ]
+      }
+    ],
+    "icon": "icon.ico"
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": true,
+    "shortcutName": "ちょこっとplayer",
+    "include": "installer.nsh",
+    "artifactName": "chokotto-player-${version}-setup.${ext}"
+  },
+  "publish": null
+}
