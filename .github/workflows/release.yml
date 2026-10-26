@@ -78,12 +78,15 @@ jobs:
           $u = Wait-Ver $env:VER
           Start-Sleep 5
           $p = Get-ItemProperty $u
-          "after 1.1.2: " + $p.DisplayVersion + " / " + $p.InstallLocation
+          # electron-builder は入れた場所を Software\<ID> に書く
+          $dir = (Get-ItemProperty "HKCU:\Software\$id" -ErrorAction SilentlyContinue).InstallLocation
+          if (-not $dir) { $dir = Join-Path $env:LOCALAPPDATA 'Programs\chokotto-player' }
+          "after 1.1.2: " + $p.DisplayVersion + " / " + $dir
           if ($p.DisplayVersion -ne $env:VER) { throw 'version not updated' }
-          $exe = Join-Path $p.InstallLocation 'ちょこっとplayer.exe'
+          $exe = Join-Path $dir 'ちょこっとplayer.exe'
           if (-not (Test-Path $exe)) { throw 'exe missing' }
           (Get-Item $exe).VersionInfo.FileVersion
-          if (-not (Test-Path (Join-Path $p.InstallLocation 'resources\ckcd.exe'))) { throw 'ckcd.exe missing' }
+          if (-not (Test-Path (Join-Path $dir 'resources\ckcd.exe'))) { throw 'ckcd.exe missing' }
           $ctx = 'HKCU:\Software\Classes\SystemFileAssociations\.flac\shell\ChokottoPlayer\command'
           "menu: " + (Get-ItemProperty $ctx).'(default)'
           $n = (Get-ChildItem 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall', 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall' | Where-Object { (Get-ItemProperty $_.PSPath).DisplayName -like '*player*' }).Count
