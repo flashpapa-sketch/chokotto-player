@@ -68,6 +68,9 @@ jobs:
             }
             throw "not installed: $want"
           }
+          # 先の試験のアプリが残っていると、インストーラーが終了を待ち続けるので止めておく
+          Get-Process | Where-Object { $_.ProcessName -like '*player*' } | ForEach-Object { "stop $($_.ProcessName) $($_.Id)"; Stop-Process -Id $_.Id -Force }
+          Start-Sleep 3
           # 先の試験でアプリが登録した右クリックメニューを消し、インストーラー自身が書くかを見る
           Remove-Item -Recurse -Force 'HKCU:\Software\Classes\SystemFileAssociations\.flac\shell\ChokottoPlayer' -ErrorAction SilentlyContinue
           gh release download v1.1.1 --repo $env:GITHUB_REPOSITORY -p '*setup.exe' -D old
