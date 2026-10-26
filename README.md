@@ -1,6 +1,6 @@
 # ちょこっとplayer
 
-ハイレゾ対応の、小さな音楽・動画プレイヤー（Windows 用）。
+ハイレゾ対応の、小さな音楽・動画プレイヤー。Windows 版・Mac 版・ブラウザ版（iPad・スマホ）があります。
 
 ![ちょこっとplayer](docs/main@2x.png)
 
